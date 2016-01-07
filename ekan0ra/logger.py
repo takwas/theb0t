@@ -1,62 +1,30 @@
+
+
+
 # twisted imports
 from twisted.words.protocols import irc
-from twisted.internet import reactor, protocol
-from twisted.python import log
 from twisted.internet import defer
+
 
 # system imports
 import time, sys, os
 import datetime
-import config as conf
 import json
 
+# imports
 import fpaste
-
-commands = [
-    ('!', 'Queue yourself to ask a question during a session'),
-    ('givemelogs', 'Give you a fpaste link with the latest log'),
-    ('clearqueue', 'Clear the ask question queue'),
-    ('next', 'ping the person in the queue to ask question'),
-    ('masters', 'returns the list of all the masters'),
-    ('add:[nick]', 'adds the nick to masters list'),
-    ('rm:[nick]', 'removes the nick to masters list'),
-    ('startclass', 'start logging the class'),
-    ('endclass', 'ends logging the class'),
-    ('pingall:[message]', 'pings the message to all'),
-    ('help', 'list all the commands'),
-    ('.link [portal]', 'Returns the link of the portal')
-]
-
-help_template = """
-{command} - {help_text}
-"""
-
-class MessageLogger(object):
-    """
-    An independent logger class (because separation of application
-    and protocol logic is a good thing).
-    """
-    def __init__(self, file):
-        self.file = file
-
-    def log(self, message):
-        """Write a message to the file."""
-        timestamp = time.strftime("[%H:%M:%S]", time.localtime(time.time()))
-        self.file.write('%s %s\n' % (timestamp, message))
-        self.file.flush()
-
-    def close(self):
-        self.file.close()
+from ekan0ra import config
 
 
 class LogBot(irc.IRCClient):
     """A logging IRC bot."""
 
-    nickname = conf.botnick
+    print config
+    nickname = config.BOTNICK
 
     def  __init__(self, channel):
         self.chn = '#'+channel
-        self.channel_admin = conf.channel_admin
+        self.channel_admin = config.DEFAULT_CHANNEL_ADMINS
         self.qs_queue = []
         self.links_reload()
         self.logger = None
@@ -117,11 +85,11 @@ class LogBot(irc.IRCClient):
             self.logger.log("<%s> %s" % (user, msg))
 
         # Check to see if they're sending me a private message
-        user_cond = user in self.channel_admin
+        user_is_admin = user in self.channel_admin
         if msg == '!'  and self.islogging:
             self.qs_queue.append(user)
         if msg == '!' and not self.islogging:
-            self.msg(self.chn, '%s no session is going on, feel free to ask a question. You do not have to type !' % user)
+            self.msg(self.chn, '%s: no session is going on, feel free to ask a question. You do not have to type !' % user)
             return
         if msg == 'givemelogs':
             import sys
@@ -131,21 +99,21 @@ class LogBot(irc.IRCClient):
                 self.msg(user, url)
             except:
                 self.msg(user, '500: I have a crash on you')
-        if msg == 'clearqueue' and user_cond:
+        if msg == 'clearqueue' and user_is_admin:
             self.clearqueue()
             self.msg(self.chn, "Queue is cleared.")
-        if msg == 'next' and user_cond:
+        if msg == 'next' and user_is_admin:
             if len(self.qs_queue) > 0:
                 name = self.qs_queue.pop(0)
-                msg = "%s please ask your question." % name
+                msg = "%s: please ask your question." % name
                 if len(self.qs_queue) > 0:
                     msg = "%s. %s you are next. Get ready with your question." % (msg, self.qs_queue[0])
                 self.msg(self.chn, msg)
             else:
                 self.msg(self.chn, "No one is in queue.")
-        if msg == 'masters' and user_cond:
+        if msg == 'masters' and user_is_admin:
             self.msg(self.chn, "My current masters are: %s" % ",".join(self.channel_admin))
-        if msg.startswith('add:') and user_cond:
+        if msg.startswith('add:') and user_is_admin:
             try:
                 name = msg.split()[1]
                 print name
@@ -153,7 +121,7 @@ class LogBot(irc.IRCClient):
                 self.msg(self.chn,'%s is a master now.' % name)
             except Exception, err:
                 print err
-        if msg.startswith('rm:') and user_cond:
+        if msg.startswith('rm:') and user_is_admin:
             try:
                 name = msg.split()[1]
                 self.channel_admin = filter(lambda x: x != name, self.channel_admin)
@@ -167,17 +135,17 @@ class LogBot(irc.IRCClient):
 
         if channel == self.nickname:
 
-            if msg.lower().endswith('startclass') and user_cond:
+            if msg.lower().endswith('startclass') and user_is_admin:
                 self.startlogging(user, msg)
                 self.msg(user, 'Session logging started successfully')
                 self.msg(self.chn, '----------SESSION STARTS----------')
 
-            if msg.lower().endswith('endclass') and user_cond:
+            if msg.lower().endswith('endclass') and user_is_admin:
                 self.msg(self.chn, '----------SESSION ENDS----------')
                 self.stoplogging(channel)
                 self.msg(user, 'Session logging terminated successfully')
 
-        if msg.lower().startswith('pingall:') and user_cond:
+        if msg.lower().startswith('pingall:') and user_is_admin:
             self.pingmsg = msg.lower().lstrip('pingall:')
             self.names(channel).addCallback(self.pingall)
 
@@ -254,38 +222,9 @@ class LogBot(irc.IRCClient):
         del self._namescallback[channel]
 
 
-class LogBotFactory(protocol.ClientFactory):
-    """A factory for LogBots.
-
-    A new protocol instance will be created each time we connect to the server.
-    """
-
-    def __init__(self, channel):
-        self.channel = channel
-
-    def buildProtocol(self, addr):
-        p = LogBot(self.channel)
-        p.factory = self
-        return p
-
-    def clientConnectionLost(self, connector, reason):
-        """If we get disconnected, reconnect to server."""
-        connector.connect()
-
-    def clientConnectionFailed(self, connector, reason):
-        print "connection failed:", reason
-        reactor.stop()
 
 
-if __name__ == '__main__':
-    # initialize logging
-    log.startLogging(sys.stdout)
 
-    # create factory protocol and application
-    f = LogBotFactory(sys.argv[1])
 
-    # connect factory to this host and port
-    reactor.connectTCP("irc.freenode.net", 6667, f)
 
-    # run bot
-    reactor.run()
+
