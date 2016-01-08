@@ -1,11 +1,9 @@
 
-
-
-# twisted imports
+# library imports
 from twisted.internet import reactor, protocol
 
-# imports
-from logger import LogBot
+# local imports
+from bot import LogBot
 
 class LogBotFactory(protocol.ClientFactory):
     """A factory for LogBots.

@@ -1,7 +1,6 @@
-'''
+"""
     Commands recognisable by our bot.
-'''
-
+"""
 
 
 # commands = [
@@ -18,6 +17,7 @@
 #     ('help', 'list all the commands'),
 #     ('.link [portal]', 'Returns the link of the portal')
 # ]
+
 
 commands = {
     '!' : 'Queue yourself to ask a question during a session',

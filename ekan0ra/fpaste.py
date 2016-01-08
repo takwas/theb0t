@@ -25,6 +25,7 @@ FPASTE_URL = 'http://paste.fedoraproject.org/'
 import os, sys, urllib, urllib2, subprocess, json
 from optparse import OptionParser, OptionGroup, SUPPRESS_HELP
 
+
 def is_text(text, maxCheck = 100, pctPrintable = 0.75):
     '''returns true if maxCheck evenly distributed chars in text are >= pctPrintable% text chars'''
     # e.g.: /bin/* ranges between 19% and 42% printable

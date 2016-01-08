@@ -1,56 +1,44 @@
 
-
-
-
-# twisted imports
+# library imports
 from twisted.internet import reactor#, protocol
 
-# imports
+# local imports
 from run import config
-
-
-
 
 
 def create_bot(channel=None):
 
-	from factory import LogBotFactory
-	#log.startlogging(sys.stdout)
+    from factory import LogBotFactory
+    #log.startlogging(sys.stdout)
 
-	if channel is None:
-		channel = config.DEFAULT_CHANNELS[0]
-	
-	channel = verify_channel(channel)
+    if channel is None:
+        channel = config.DEFAULT_CHANNELS[0]
+    
+    channel = verify_channel(channel)
 
-	# create factory protocol and application
-	log_bot = LogBotFactory(channel)
+    # create factory protocol and application
+    log_bot = LogBotFactory(channel)
 
-	return log_bot
-
-
+    return log_bot
 
 
 def verify_channel(channel):
 
+    if channel:
 
-	if len(channel) > 0:
+        if not channel.startswith('#'):
+            channel = '#' + channel
 
-		if not channel.startswith('#'):
-			channel = '#' + channel
+    else:
+        pass
 
-	else:
-		pass
-
-
-	return channel
-
-
+    return channel
 
 
 def run_bot(bot, server=("irc.freenode.net", 6667, )):
 
-	# connect factory to this host and port
-	reactor.connectTCP(server[0], server[1], bot)
+    # connect factory to this host and port
+    reactor.connectTCP(server[0], server[1], bot)
 
-	# run bot
-	reactor.run()
+    # run bot
+    reactor.run()

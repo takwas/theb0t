@@ -1,23 +1,16 @@
 
-
-
-
-# twisted imports
-from twisted.python import log
-
-# system imports
+# standard library imports
 import os
 import sys
 
-# imports
+# library imports
+from twisted.python import log
+
+# local imports
 import config as conf
 
 
-
-
 config = conf.config_modes.get(os.getenv('BOT_CONFIG', default='default'))
-
-
 
 
 if __name__ == '__main__':
