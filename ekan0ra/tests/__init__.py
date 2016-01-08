@@ -13,4 +13,5 @@ from ekan0ra import bot
 
 class BotLogTest(unittest.Test):
 
+    def test_log
     pass
