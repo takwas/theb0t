@@ -1,2 +1,2 @@
 web: echo "foobaz" > /dev/null
-bot: bundle exec nohup ./run.py &
+worker: nohup ./run.py &
