@@ -1,3 +1,3 @@
 web: echo "foobaz" > /dev/null
-worker: ./run.py python
+worker: ./run.py dgplug
 
