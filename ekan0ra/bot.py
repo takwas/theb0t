@@ -9,7 +9,7 @@ from twisted.words.protocols import irc
 from twisted.internet import defer
 
 # local imports
-from ekan0ra import config
+#from ekan0ra import config
 from commands import commands
 from logger import MessageLogger
 import fpaste
@@ -25,11 +25,10 @@ help_template = """
 class LogBot(irc.IRCClient):
     """A logging IRC bot."""
 
-    nickname = config.BOTNICK
-
-    def  __init__(self, channel):
-        self.chn = utils.verify_channel(channel)
-        self.channel_admin = config.DEFAULT_CHANNEL_ADMINS
+    def  __init__(self, nick, channel, channel_admins):
+        self.nickname = nick
+        self.channel = channel
+        self.channel_admins_list = channel_admins
         self.qs_queue = []
         self.links_reload()
         self.logger = None
@@ -72,9 +71,9 @@ class LogBot(irc.IRCClient):
 
     def pingall(self, nicklist):
         """Called to ping all with a message"""
-        msg = ', '.join([nick for nick in nicklist if nick != self.nickname and nick not in self.channel_admin])
-        self.msg(self.chn, msg)
-        self.msg(self.chn, self.pingmsg.lstrip())
+        msg = ', '.join([nick for nick in nicklist if nick != self.nickname and nick not in self.channel_admins_list])
+        self.msg(self.channel, msg)
+        self.msg(self.channel, self.pingmsg.lstrip())
 
     # To reload json file
     def links_reload(self):
@@ -91,13 +90,13 @@ class LogBot(irc.IRCClient):
             self.logger.log("<%s> %s" % (user, msg))
 
         # Check to see if they're sending me a private message
-        user_is_admin = user in self.channel_admin
+        user_is_admin = user in self.channel_admins_list
 
         if msg == '!'  and self.islogging:
             self.qs_queue.append(user)
 
         if msg == '!' and not self.islogging:
-            self.msg(self.chn, '%s: no session is going on, feel free to ask a question. You do not have to type !' % user)
+            self.msg(self.channel, '%s: no session is going on, feel free to ask a question. You do not have to type !' % user)
             return
 
         if msg == 'givemelogs':
@@ -112,7 +111,7 @@ class LogBot(irc.IRCClient):
         
         if msg == 'clearqueue' and user_is_admin:
             self.clearqueue()
-            self.msg(self.chn, "Queue is cleared.")
+            self.msg(self.channel, "Queue is cleared.")
 
         if msg == 'next' and user_is_admin:
             if len(self.qs_queue) > 0:
@@ -120,23 +119,23 @@ class LogBot(irc.IRCClient):
                 msg = "%s: please ask your question." % name
                 if len(self.qs_queue) > 0:
                     msg = "%s. %s you are next. Get ready with your question." % (msg, self.qs_queue[0])
-                self.msg(self.chn, msg)
+                self.msg(self.channel, msg)
             else:
-                self.msg(self.chn, "No one is in queue.")
+                self.msg(self.channel, "No one is in queue.")
         if msg == 'masters' and user_is_admin:
-            self.msg(self.chn, "My current masters are: %s" % ",".join(self.channel_admin))
+            self.msg(self.channel, "My current masters are: %s" % ",".join(self.channel_admins_list))
         if msg.startswith('add:') and user_is_admin:
             try:
                 name = msg.split()[1]
                 print name
-                self.channel_admin.append(name)
-                self.msg(self.chn,'%s is a master now.' % name)
+                self.channel_admins_list.append(name)
+                self.msg(self.channel,'%s is a master now.' % name)
             except Exception, err:
                 print err
         if msg.startswith('rm:') and user_is_admin:
             try:
                 name = msg.split()[1]
-                self.channel_admin = filter(lambda x: x != name, self.channel_admin)
+                self.channel_admins_list = filter(lambda x: x != name, self.channel_admins_list)
             except Exception, err:
                 print err
 
@@ -150,10 +149,10 @@ class LogBot(irc.IRCClient):
             if msg.lower().endswith('startclass') and user_is_admin:
                 self.startlogging(user, msg)
                 self.msg(user, 'Session logging started successfully')
-                self.msg(self.chn, '----------SESSION STARTS----------')
+                self.msg(self.channel, '----------SESSION STARTS----------')
 
             if msg.lower().endswith('endclass') and user_is_admin:
-                self.msg(self.chn, '----------SESSION ENDS----------')
+                self.msg(self.channel, '----------SESSION ENDS----------')
                 self.stoplogging(channel)
                 self.msg(user, 'Session logging terminated successfully')
 
@@ -164,7 +163,7 @@ class LogBot(irc.IRCClient):
         if msg == '.link help' or msg == '.link help' or msg == '.link -l':
             link_names = str(utils.get_link_names(self.links_data))
             
-            self.msg(self.chn, link_names)      
+            self.msg(self.channel, link_names)      
             
 
         if msg.startswith('.link '):
@@ -219,12 +218,12 @@ class LogBot(irc.IRCClient):
     def links_for_key(self, msg):
         keyword = msg.split()[1]
         if not keyword:
-            self.msg(self.chn, '.link need a keyword. Check help for details')
+            self.msg(self.channel, '.link need a keyword. Check help for details')
 
         if keyword == 'reload':
             self.links_reload()
         else:
-            self.msg(self.chn,
+            self.msg(self.channel,
                      str(self.links_data.get(str(keyword), "Keyword does not exist! Type [.link help] or [.link -l] to see valid keywords")))
 
     def irc_RPL_ENDOFNAMES(self, prefix, params):

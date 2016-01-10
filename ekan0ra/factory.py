@@ -4,6 +4,7 @@ from twisted.internet import reactor, protocol
 
 # local imports
 from bot import LogBot
+#import utils
 
 class LogBotFactory(protocol.ClientFactory):
     """A factory for LogBots.
@@ -11,11 +12,17 @@ class LogBotFactory(protocol.ClientFactory):
     A new protocol instance will be created each time we connect to the server.
     """
 
-    def __init__(self, channel):
+    def __init__(self, nick, channel, channel_admins):
+        self.nick = nick
         self.channel = channel
+        self.channel_admins = channel_admins
+
 
     def buildProtocol(self, addr):
-        p = LogBot(self.channel)
+        p = LogBot(nick=self.nick,  \
+                   channel=self.channel,    \
+                   channel_admins=self.channel_admins   \
+                   )
         p.factory = self
         return p
 
