@@ -1,2 +1,3 @@
 web: echo "foobaz" > /dev/null
-worker: ./run.py
+worker: ./run.py python
+
