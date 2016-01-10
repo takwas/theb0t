@@ -149,7 +149,8 @@ class LogBot(irc.IRCClient):
             if msg.lower().endswith('startclass') and user_is_admin:
                 self.startlogging(user, msg)
                 self.msg(user, 'Session logging started successfully')
-                self.msg(self.channel, '----------SESSION STARTS----------')
+                #self.msg(self.channel, '----------SESSION STARTS----------')
+                self.msg(user, '----------SESSION STARTS----------')
 
             if msg.lower().endswith('endclass') and user_is_admin:
                 self.msg(self.channel, '----------SESSION ENDS----------')

@@ -21,6 +21,10 @@ if __name__ == '__main__':
     # initialize logging
     log.startLogging(sys.stdout)
 
-    the_bot = create_bot(config=config)
+    from sys import argv
+    if len(argv) > 1:
+        the_bot = create_bot(config=config, channel=argv[1])
+    else:
+        the_bot = create_bot(config=config)
 
     run_bot(the_bot)
