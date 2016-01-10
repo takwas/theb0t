@@ -12,7 +12,7 @@ class UtilsTest(unittest.TestCase):
         bot = create_bot(config=config)
         
     def test_verify_channel():
-        assertEquals(verify_channel("#chan"), "chan")
+        self.assertEqual(verify_channel("#chan"), "chan")
 
 #    def test_get_link_names(links_data):
 
