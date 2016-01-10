@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Module to run the tests"""
 
 

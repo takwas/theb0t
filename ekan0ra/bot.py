@@ -13,6 +13,7 @@ from ekan0ra import config
 from commands import commands
 from logger import MessageLogger
 import fpaste
+import utils
 
 
 # globals
@@ -27,7 +28,7 @@ class LogBot(irc.IRCClient):
     nickname = config.BOTNICK
 
     def  __init__(self, channel):
-        self.chn = '#'+channel
+        self.chn = utils.verify_channel(channel)
         self.channel_admin = config.DEFAULT_CHANNEL_ADMINS
         self.qs_queue = []
         self.links_reload()
@@ -84,28 +85,35 @@ class LogBot(irc.IRCClient):
     def privmsg(self, user, channel, msg):
         """This will get called when the bot receives a message."""
         user = user.split('!', 1)[0]
+
         if self.islogging:
             user = user.split('!', 1)[0]
             self.logger.log("<%s> %s" % (user, msg))
 
         # Check to see if they're sending me a private message
         user_is_admin = user in self.channel_admin
+
         if msg == '!'  and self.islogging:
             self.qs_queue.append(user)
+
         if msg == '!' and not self.islogging:
             self.msg(self.chn, '%s: no session is going on, feel free to ask a question. You do not have to type !' % user)
             return
+
         if msg == 'givemelogs':
             import sys
             sys.argv = ['fpaste', self.filename]
+
             try:
                 short_url, url = fpaste.main()
                 self.msg(user, url)
             except:
                 self.msg(user, '500: I have a crash on you')
+        
         if msg == 'clearqueue' and user_is_admin:
             self.clearqueue()
             self.msg(self.chn, "Queue is cleared.")
+
         if msg == 'next' and user_is_admin:
             if len(self.qs_queue) > 0:
                 name = self.qs_queue.pop(0)
@@ -152,6 +160,12 @@ class LogBot(irc.IRCClient):
         if msg.lower().startswith('pingall:') and user_is_admin:
             self.pingmsg = msg.lower().lstrip('pingall:')
             self.names(channel).addCallback(self.pingall)
+
+        if msg == '.link help' or msg == '.link help' or msg == '.link -l':
+            link_names = str(utils.get_link_names(self.links_data))
+            
+            self.msg(self.chn, link_names)      
+            
 
         if msg.startswith('.link '):
             self.links_for_key(msg)
@@ -211,7 +225,7 @@ class LogBot(irc.IRCClient):
             self.links_reload()
         else:
             self.msg(self.chn,
-                     str(self.links_data.get(str(keyword), "Keyword does not exists")))
+                     str(self.links_data.get(str(keyword), "Keyword does not exist! Type [.link help] or [.link -l] to see valid keywords")))
 
     def irc_RPL_ENDOFNAMES(self, prefix, params):
         channel = params[1].lower()

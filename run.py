@@ -21,6 +21,6 @@ if __name__ == '__main__':
     # initialize logging
     log.startLogging(sys.stdout)
 
-    the_bot = create_bot()
+    the_bot = create_bot(config=config)
 
     run_bot(the_bot)

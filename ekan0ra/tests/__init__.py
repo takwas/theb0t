@@ -4,14 +4,11 @@
 
 
 # standard library imports
-import unittest
+#import unittest
 
-# library imports
-from config import TestConfig as config
-from ekan0ra import bot
+# local imports
+from .. import config as conf
 
 
-class BotLogTest(unittest.Test):
+config = conf.config_modes.get('test')
 
-    def test_log
-    pass
