@@ -3,7 +3,7 @@
 
 # local imports
 # THESE IMPORTS FAIL!!!
-import sawkat.config
+from sawkat.tests import config
 from sawkat import create_bot
 print "IMPORTED"
 

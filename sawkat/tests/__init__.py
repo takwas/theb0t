@@ -5,8 +5,8 @@
 
 # local imports
 # THIS FAILS!!!
-from .sawkat import config as conf
+from sawkat import config as conf
 
 
-#config = conf.config_modes.get('test')
+config = conf.config_modes.get('test')
 
