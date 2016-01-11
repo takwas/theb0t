@@ -7,7 +7,7 @@
 
 
 # THIS FAILS!!!
-from sawkat.tests import test_utils
+#from sawkat.tests import test_utils
 
 
 if __name__ == '__main__':
