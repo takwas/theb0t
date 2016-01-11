@@ -32,3 +32,21 @@ def get_link_names(links_data):
         links_list.append(key)
 
     return links_list
+
+
+
+
+# To reload  data from the json file
+def reload_links(filename):
+    
+    # standard library imports
+    import json
+
+
+    with open(filename) as f:
+        links_data = json.load(f)
+    
+    return links_data
+
+
+reload_links('../links.json')

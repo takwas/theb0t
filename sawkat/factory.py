@@ -12,15 +12,17 @@ class LogBotFactory(protocol.ClientFactory):
     A new protocol instance will be created each time we connect to the server.
     """
 
-    def __init__(self, nick, channel, channel_admins):
+    def __init__(self, nick, channels, channel_admins, pwd=None):
         self.nick = nick
-        self.channel = channel
+        self.pwd = pwd
+        self.channels = channels
         self.channel_admins = channel_admins
 
 
     def buildProtocol(self, addr):
         p = LogBot(nick=self.nick,  \
-                   channel=self.channel,    \
+                   pwd=self.pwd,    \
+                   channels=self.channels,    \
                    channel_admins=self.channel_admins   \
                    )
         p.factory = self

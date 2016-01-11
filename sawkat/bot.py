@@ -25,13 +25,17 @@ help_template = """
 class LogBot(irc.IRCClient):
     """A logging IRC bot."""
 
-    def  __init__(self, nick, channel, channel_admins):
+    def  __init__(self, nick, channels, channel_admins, pwd=None):
         self.nickname = nick
-        self.channel = channel
+        self.password = pwd
+        self.channels = channels
+        self.channel = channels[0]
         self.channel_admins_list = channel_admins
-        self.qs_queue = []
+        self.qs_queue = Queue()
         self.links_reload()
         self.logger = None
+        self.sourceURL = "http://github.com/takwas/theb0t"
+
 
     def clearqueue(self):
         self.qs_queue = []
@@ -67,7 +71,8 @@ class LogBot(irc.IRCClient):
 
     def signedOn(self):
         """Called when bot has succesfully signed on to server."""
-        self.join(self.factory.channel)
+        for channel in self.channels:
+            self.join(channel)
 
     def pingall(self, nicklist):
         """Called to ping all with a message"""
@@ -75,11 +80,6 @@ class LogBot(irc.IRCClient):
         self.msg(self.channel, msg)
         self.msg(self.channel, self.pingmsg.lstrip())
 
-    # To reload json file
-    def links_reload(self):
-        link_file = open('links.json')
-        self.links_data = json.load(link_file)
-        link_file.close()
 
     def privmsg(self, user, channel, msg):
         """This will get called when the bot receives a message."""
@@ -244,5 +244,32 @@ class LogBot(irc.IRCClient):
 
 
 
+class Queue(object):
+
+    def __init__(self):
+        self.queue = []        
 
 
+    def enqueue(self, item):
+        self.queue.append(item)
+
+
+    def dequeue(self, index):
+        """
+            Does not return removed queue item"""
+        self.pop(index)
+
+    def pop(self, index=None):
+
+        try:
+        
+            index = len(self.queue)-1 if index is None
+            return self.queue.pop(index)
+        
+        except IndexError("Pop index out of queue range!"):
+            return None
+                
+
+
+    def is_empty(self):
+        return len(self.queue) <= 0

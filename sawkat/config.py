@@ -9,18 +9,24 @@ running_mode = 'App running in {mode} mode.'
 # will be extended
 class Config:
 
-    pass
+    LINKS_FILE = os.path.join(os.path.abspath(os.curdir), 'links.json')
 
 
 # Configuration used during
 # the development of our bot
 class DevConfig(Config):
 
+    # standard library imports
+    import os
+
+
     BOTNICK = 'sawkat'
 
     DEFAULT_CHANNEL_ADMINS = ('acetakwas', )
 
-    DEFAULT_CHANNELS = ('#test-my-bot', )    # #test-my-bot is not a registered channel.
+    DEFAULT_CHANNELS = ('#test-my-bot', '#test-bot', '#botters', )    # #test-my-bot is not a registered channel.
+
+    
 
 
     def __repr__(self):
