@@ -47,7 +47,7 @@ if __name__ == '__main__':
     
     channels = args.channels.split() if args.channels else None
 
-    the_bot = create_bot(config, nick=args.nick, pwd=args.pwd, channels=channels)
+    the_bot = create_bot(config, nick=args.nick, pwd=args.pwd or os.environ['IRC_PWD'], channels=channels)
 
     run_bot(the_bot)
 

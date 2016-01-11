@@ -1,3 +1,3 @@
 web: echo "foobaz" > /dev/null
-worker: ./run.py
+worker: ./run.py channels="python botters-test dgplug"
 
