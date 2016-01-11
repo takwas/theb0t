@@ -8,6 +8,10 @@ running_mode = 'App running in {mode} mode.'
 # Base configuration class that
 # will be extended
 class Config:
+    
+    # standard library imports
+    import os
+
 
     LINKS_FILE = os.path.join(os.path.abspath(os.curdir), 'links.json')
 
@@ -15,10 +19,6 @@ class Config:
 # Configuration used during
 # the development of our bot
 class DevConfig(Config):
-
-    # standard library imports
-    import os
-
 
     BOTNICK = 'sawkat'
 

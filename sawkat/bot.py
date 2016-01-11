@@ -32,7 +32,7 @@ class LogBot(irc.IRCClient):
         self.channel = channels[0]
         self.channel_admins_list = channel_admins
         self.qs_queue = Queue()
-        self.links_reload()
+        #self.links_reload()
         self.logger = None
         self.sourceURL = "http://github.com/takwas/theb0t"
 
@@ -263,7 +263,7 @@ class Queue(object):
 
         try:
         
-            index = len(self.queue)-1 if index is None
+            index = len(self.queue)-1 if index is None else index
             return self.queue.pop(index)
         
         except IndexError("Pop index out of queue range!"):

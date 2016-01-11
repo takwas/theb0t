@@ -49,4 +49,4 @@ def reload_links(filename):
     return links_data
 
 
-reload_links('../links.json')
+#reload_links('../links.json')

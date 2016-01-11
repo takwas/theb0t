@@ -4,7 +4,7 @@
 import os
 
 # local imports
-import config as conf
+from sawkat import config as conf
 
 
 # set the configuration mode that will be
@@ -38,7 +38,7 @@ def get_args_parser():
 if __name__ == '__main__':
 
     # local imports
-    from ekan0ra import create_bot, run_bot
+    from sawkat import create_bot, run_bot
    
 
     # get the command-line arguments parser
@@ -47,7 +47,11 @@ if __name__ == '__main__':
     
     channels = args.channels.split() if args.channels else None
 
-    the_bot = create_bot(config, nick=args.nick, pwd=args.pwd or os.environ['IRC_PWD'], channels=channels)
+    the_bot = create_bot(config,
+                        nick=args.nick,
+                        pwd=args.pwd or os.environ['IRC_PWD'],
+                        channels=channels
+                        )
 
     run_bot(the_bot)
 
