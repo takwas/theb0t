@@ -50,3 +50,16 @@ def reload_links(filename):
 
 
 #reload_links('../links.json')
+
+
+def is_valid_cmd(cmd):
+
+    from commands import cmds
+
+    return cmds.has_key(cmd)
+
+
+
+#def get_help_string(param_count=0):
+
+#    for i in range(param_count):

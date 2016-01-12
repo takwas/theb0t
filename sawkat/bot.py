@@ -9,9 +9,9 @@ from twisted.words.protocols import irc
 from twisted.internet import defer
 
 # local imports
-#from ekan0ra import config
 from commands import commands
 from logger import MessageLogger
+from parser import ArgsParser
 import fpaste
 import utils
 
@@ -35,6 +35,7 @@ class LogBot(irc.IRCClient):
         #self.links_reload()
         self.logger = None
         self.sourceURL = "http://github.com/takwas/theb0t"
+        self.msg_parser = ArgsParser()
 
 
     def clearqueue(self):
@@ -86,7 +87,7 @@ class LogBot(irc.IRCClient):
         user = user.split('!', 1)[0]
 
         if self.islogging:
-            user = user.split('!', 1)[0]
+            #user = user.split('!', 1)[0]       # REPEATED CODE!
             self.logger.log("<%s> %s" % (user, msg))
 
         # Check to see if they're sending me a private message
