@@ -9,9 +9,9 @@ from twisted.words.protocols import irc
 from twisted.internet import defer
 
 # local imports
-#from ekan0ra import config
-from commands import commands
+from commands import cmds
 from logger import MessageLogger
+from parser import ArgsParser
 import fpaste
 import utils
 
@@ -32,9 +32,11 @@ class LogBot(irc.IRCClient):
         self.channel = channels[0]
         self.channel_admins_list = channel_admins
         self.qs_queue = Queue()
-        self.links_reload()
+        #self.links_reload()
         self.logger = None
         self.sourceURL = "http://github.com/takwas/theb0t"
+        self.parser = ArgsParser()
+        self.stealth = False
 
 
     def clearqueue(self):
@@ -46,16 +48,9 @@ class LogBot(irc.IRCClient):
         self._namescallback = {}
 
     def startlogging(self, user, msg):
-        now = datetime.datetime.now()
-        self.filename = "Logs-%s.txt"%now.strftime("%Y-%m-%d-%H-%M")
-        self.logger = MessageLogger(open(self.filename, "a"))
 
-        self.logger.log("[## Class Started at %s ##]" %
-                    time.asctime(time.localtime(time.time())))
-        user = user.split('!', 1)[0]
-        self.logger.log("<%s> %s" % (user, msg))
-        self.islogging = True
-
+        pass
+        
     def stoplogging(self, channel):
         if not self.logger:
             return
@@ -84,91 +79,107 @@ class LogBot(irc.IRCClient):
     def privmsg(self, user, channel, msg):
         """This will get called when the bot receives a message."""
         user = user.split('!', 1)[0]
+        
+        msg = msg.strip()
 
-        if self.islogging:
-            user = user.split('!', 1)[0]
-            self.logger.log("<%s> %s" % (user, msg))
-
-        # Check to see if they're sending me a private message
         user_is_admin = user in self.channel_admins_list
 
-        if msg == '!'  and self.islogging:
-            self.qs_queue.append(user)
-
-        if msg == '!' and not self.islogging:
-            self.msg(self.channel, '%s: no session is going on, feel free to ask a question. You do not have to type !' % user)
-            return
-
-        if msg == 'givemelogs':
-            import sys
-            sys.argv = ['fpaste', self.filename]
-
-            try:
-                short_url, url = fpaste.main()
-                self.msg(user, url)
-            except:
-                self.msg(user, '500: I have a crash on you')
-        
-        if msg == 'clearqueue' and user_is_admin:
-            self.clearqueue()
-            self.msg(self.channel, "Queue is cleared.")
-
-        if msg == 'next' and user_is_admin:
-            if len(self.qs_queue) > 0:
-                name = self.qs_queue.pop(0)
-                msg = "%s: please ask your question." % name
-                if len(self.qs_queue) > 0:
-                    msg = "%s. %s you are next. Get ready with your question." % (msg, self.qs_queue[0])
-                self.msg(self.channel, msg)
-            else:
-                self.msg(self.channel, "No one is in queue.")
-        if msg == 'masters' and user_is_admin:
-            self.msg(self.channel, "My current masters are: %s" % ",".join(self.channel_admins_list))
-        if msg.startswith('add:') and user_is_admin:
-            try:
-                name = msg.split()[1]
-                print name
-                self.channel_admins_list.append(name)
-                self.msg(self.channel,'%s is a master now.' % name)
-            except Exception, err:
-                print err
-        if msg.startswith('rm:') and user_is_admin:
-            try:
-                name = msg.split()[1]
-                self.channel_admins_list = filter(lambda x: x != name, self.channel_admins_list)
-            except Exception, err:
-                print err
-
-        if msg == 'help':
-            for command, help_txt in commands.iteritems():
-                self.msg(user, help_template.format(command=command,
-                                                    help_text=help_txt))
-
+        # check if it is a private message to me
         if channel == self.nickname:
+            room = user
+            response = self.parser.parse_msg(msg)
 
-            if msg.lower().endswith('startclass') and user_is_admin:
-                self.startlogging(user, msg)
-                self.msg(user, 'Session logging started successfully')
-                #self.msg(self.channel, '----------SESSION STARTS----------')
-                self.msg(user, '----------SESSION STARTS----------')
+        # or a message directed at me from the channel
+        elif msg.startswith(self.nickname):
+            room = channel
+            response = self.parser.parse_msg(msg[msg.find(' ')+1:])
 
-            if msg.lower().endswith('endclass') and user_is_admin:
-                self.msg(self.channel, '----------SESSION ENDS----------')
-                self.stoplogging(channel)
-                self.msg(user, 'Session logging terminated successfully')
+        print response.get_response()
+        if not self.stealth:
+            for line in response.get_response():
+                self.msg(room, line)
 
-        if msg.lower().startswith('pingall:') and user_is_admin:
-            self.pingmsg = msg.lower().lstrip('pingall:')
-            self.names(channel).addCallback(self.pingall)
+        # if self.islogging:
+        #     self.logger.log("<%s> %s" % (user, msg))
 
-        if msg == '.link help' or msg == '.link help' or msg == '.link -l':
-            link_names = str(utils.get_link_names(self.links_data))
+
+        # if msg == '!'  and self.islogging:
+        #     self.qs_queue.append(user)
+
+        # if msg == '!' and not self.islogging:
+        #     self.msg(self.channel, '%s: no session is going on, feel free to ask a question. You do not have to type !' % user)
+        #     return
+
+        # if msg == 'givemelogs':
+        #     import sys
+        #     sys.argv = ['fpaste', self.filename]
+
+        #     try:
+        #         short_url, url = fpaste.main()
+        #         self.msg(user, url)
+        #     except:
+        #         self.msg(user, '500: I have a crash on you')
+        
+        # if msg == 'clearqueue' and user_is_admin:
+        #     self.clearqueue()
+        #     self.msg(self.channel, "Queue is cleared.")
+
+        # if msg == 'next' and user_is_admin:
+        #     if len(self.qs_queue) > 0:
+        #         name = self.qs_queue.pop(0)
+        #         msg = "%s: please ask your question." % name
+        #         if len(self.qs_queue) > 0:
+        #             msg = "%s. %s you are next. Get ready with your question." % (msg, self.qs_queue[0])
+        #         self.msg(self.channel, msg)
+        #     else:
+        #         self.msg(self.channel, "No one is in queue.")
+        # if msg == 'masters' and user_is_admin:
+        #     self.msg(self.channel, "My current masters are: %s" % ",".join(self.channel_admins_list))
+        # if msg.startswith('add:') and user_is_admin:
+        #     try:
+        #         name = msg.split()[1]
+        #         print name
+        #         self.channel_admins_list.append(name)
+        #         self.msg(self.channel,'%s is a master now.' % name)
+        #     except Exception, err:
+        #         print err
+        # if msg.startswith('rm:') and user_is_admin:
+        #     try:
+        #         name = msg.split()[1]
+        #         self.channel_admins_list = filter(lambda x: x != name, self.channel_admins_list)
+        #     except Exception, err:
+        #         print err
+
+        # if msg == 'help':
+        #     for command, help_txt in commands.iteritems():
+        #         self.msg(user, help_template.format(command=command,
+        #                                             help_text=help_txt))
+
+        # if channel == self.nickname:
+
+        #     if msg.lower().endswith('startclass') and user_is_admin:
+        #         self.startlogging(user, msg)
+        #         self.msg(user, 'Session logging started successfully')
+        #         #self.msg(self.channel, '----------SESSION STARTS----------')
+        #         self.msg(user, '----------SESSION STARTS----------')
+
+        #     if msg.lower().endswith('endclass') and user_is_admin:
+        #         self.msg(self.channel, '----------SESSION ENDS----------')
+        #         self.stoplogging(channel)
+        #         self.msg(user, 'Session logging terminated successfully')
+
+        # if msg.lower().startswith('pingall:') and user_is_admin:
+        #     self.pingmsg = msg.lower().lstrip('pingall:')
+        #     self.names(channel).addCallback(self.pingall)
+
+        # if msg == '.link help' or msg == '.link help' or msg == '.link -l':
+        #     link_names = str(utils.get_link_names(self.links_data))
             
-            self.msg(self.channel, link_names)      
+        #     self.msg(self.channel, link_names)      
             
 
-        if msg.startswith('.link '):
-            self.links_for_key(msg)
+        # if msg.startswith('.link '):
+        #     self.links_for_key(msg)
 
     def action(self, user, channel, msg):
         """This will get called when the bot sees someone do an action."""
@@ -263,7 +274,7 @@ class Queue(object):
 
         try:
         
-            index = len(self.queue)-1 if index is None
+            index = len(self.queue)-1 if index is None else index
             return self.queue.pop(index)
         
         except IndexError("Pop index out of queue range!"):
