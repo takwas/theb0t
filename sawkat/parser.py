@@ -14,7 +14,8 @@ class ArgsParser(object):
     def parse_msg(self, msg):
 
         # strip message of leading and trailing whitespace chars
-        msg = strip(msg)
+        msg = msg.strip()
+        msg = msg +' '
 
         if msg.startswith(self.cmd_delimiter):
 
@@ -24,14 +25,15 @@ class ArgsParser(object):
             cmd = msg[1:cmd_width]
 
             from utils import is_valid_cmd
-
+            
             if is_valid_cmd(cmd):
                 from commands import cmds
-                func = cmds.get(cmd)
-                func(msg[cmd_width:].strip())
+                func = cmds.get(cmd).get_action()
+                return func(msg=msg[cmd_width:].strip())
 
             else:
-                return "Invalid command!. Type ':help' for help"
+                from actions import Response
+                return Response("Invalid command!. Type ':help' for help")
 
 
     # method to add new command on the fly

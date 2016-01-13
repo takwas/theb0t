@@ -64,106 +64,106 @@ class Command(object):
 cmds = {
     'help' : Command(cmd='help', action_func=actions.do_help,
         help_text=   \
-            """
-                Usage:
+"""
+Usage:
 
-                U1:\t:help
-                    Show general help.
-                
-                U2:\t:help <command>
-                    Show help for specified <command>. Use USG1 for a
-                    list of valid commands.
-            """
+    U1:\t:help
+        Show general help.
+
+    U2:\t:help <command>
+        Show help for specified <command>. Use USG1 for a
+        list of valid commands.
+"""
         ),
     'about' : Command(cmd='about', action_func=actions.do_about,
         help_text=   \
-            """
-                Usage:
+"""
+Usage:
 
-                U1:\t:about
-                    Show 'about' information for this client.
-            """
+    U1:\t:about
+        Show 'about' information for this client.
+"""
         ),
     'inbox' : Command(cmd='inbox', action_func=actions.do_inbox,
         help_text=   \
-            """
-                Usage:
+"""
+Usage:
 
-                U1:\t:inbox
-                    Show help for this command.
+    U1:\t:inbox
+        Show help for this command.
 
-                U2:\t:inbox status
-                    Show status of inbox. See if there are any unread messages.
-            """
+    U2:\t:inbox status
+        Show status of inbox. See if there are any unread messages.
+"""
         ),
     'link' : Command(cmd='link', action_func=actions.do_link,
         help_text=   \
-            """
-                Usage:
+"""
+Usage:
 
-                U1:\t:link
-                    Show help for this command.
+    U1:\t:link
+        Show help for this command.
 
-                U2:\t:link list
-                    Show a list of available link titles.
+    U2:\t:link list
+        Show a list of available link titles.
 
-                U3:\t:link <link_title>
-                    Show URL for <link_title>.
-            """
+    U3:\t:link <link_title>
+        Show URL for <link_title>.
+"""
         ),
     'log' : Command(cmd='log', action_func=actions.do_log,
         help_text=   \
-            """
-                Usage:
+"""
+Usage:
 
-                U1:\t:log
-                    Show help for this command.
-            """
-        ),
+    U1:\t:log
+        Show help for this command.
+"""
+),
     'masters' : Command(cmd='masters', action_func=actions.do_masters,
         help_text=   \
-            """
-                Usage:
+"""
+Usage:
 
-                U1:\t:masters
-                    Show help for this command.
-            """
+    U1:\t:masters
+        Show help for this command.
+"""
         ),
     'paste' : Command(cmd='paste', action_func=actions.do_paste,
         help_text=   \
-            """
-                Usage:
+"""
+Usage:
 
-                U1:\t:paste
-                    Show help for this command.
-            """
+    U1:\t:paste
+        Show help for this command.
+"""
         ),
     'whatdidimiss' : Command(cmd='recall', action_func=actions.do_recall,
         help_text=   \
-            """
-                Usage:
+"""
+Usage:
 
-                U1:\t:recall
-                    Show help for this command.
-            """
+    U1:\t:recall
+        Show help for this command.
+"""
         ),
     'resource' : Command(cmd='resource', action_func=actions.do_resource,
         help_text=   \
-            """
-                Usage:
+"""
+Usage:
 
-                U1:\t:resource
-                    Show help for this command.
-            """
+    U1:\t:resource
+        Show help for this command.
+"""
         ),
     'submit' : Command(cmd='submit', action_func=actions.do_submit,
         help_text=   \
-            """
-                Usage:
+"""
+Usage:
 
-                U1:\t:submit
-                    Show help for this command.
-            """
+    U1:\t:submit
+        Show help for this command.
+"""
         )
 }
 
