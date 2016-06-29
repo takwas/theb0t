@@ -16,11 +16,16 @@ class Config:
 # the development of our bot
 class DevConfig(Config):
 
-    BOTNICK = 'sawkat'
+    BOTNICK = 'sawkateca'
+    ADMINS = ('acetakwas', )
+    CHANNEL = '#test-my-bot'    # #test-my-bot is not a registered channel.
+    LOG_FILENAME_PREFIX = 'Logs-{}.txt'
+    LOGGER_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    LOG_PREFIX = '[{}]'
 
-    DEFAULT_CHANNEL_ADMINS = ('acetakwas', )
+    SESSION_START_MSG = '----------SESSION STARTS----------'
+    SESSION_END_MSG = '----------SESSION ENDS----------'
 
-    DEFAULT_CHANNELS = ('#test-my-bot', )    # #test-my-bot is not a registered channel.
 
 
     def __repr__(self):

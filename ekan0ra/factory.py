@@ -12,19 +12,16 @@ class LogBotFactory(protocol.ClientFactory):
     A new protocol instance will be created each time we connect to the server.
     """
 
-    def __init__(self, nick, channel, channel_admins):
-        self.nick = nick
-        self.channel = channel
-        self.channel_admins = channel_admins
-
+    def __init__(self, config): # nick, channel, channel_admins):
+        self.config = config
+        self.channel = self.config.CHANNEL
+        self.nickname = self.config.BOTNICK
+        self.channel_admins_list = self.config.ADMINS
 
     def buildProtocol(self, addr):
-        p = LogBot(nick=self.nick,  \
-                   channel=self.channel,    \
-                   channel_admins=self.channel_admins   \
-                   )
-        p.factory = self
-        return p
+        bot = LogBot(self.config)
+        bot.factory = self
+        return bot
 
     def clientConnectionLost(self, connector, reason):
         """If we get disconnected, reconnect to server."""
