@@ -13,15 +13,17 @@ class MessageLogger(object):
 
         self.logger = logging.getLogger('classLogger')
         self.bot = bot
+        self.filename = None
 
     def create_new_log(self):
         now = datetime.now()
         timestamp = now.strftime("%Y-%m-%d-%H-%M")
-        log_file_handler = logging.FileHandler(self.bot.config.LOG_FILENAME_PREFIX.format(timestamp))
+        self.filename = self.bot.config.LOG_FILENAME_PREFIX.format(timestamp)
+        log_file_handler = logging.FileHandler(filename)
         log_file_handler.setLevel(logging.INFO)
         log_console_handler = logging.StreamHandler()
         log_console_handler.setLevel(logging.ERROR)
-        log_formatter = self.bot.config.LOGGER_FORMAT
+        log_formatter = logging.Formatter(self.bot.config.LOGGER_FORMAT)
         log_file_handler.setFormatter(log_formatter)
         log_console_handler.setFormatter(log_formatter)
 

@@ -5,11 +5,14 @@ import unittest
 from tests import config
 from ekan0ra import create_bot
 
+
 class UtilsTest(unittest.TestCase):
 
-    def setup():
-        
-        bot = create_bot(config=config)
+    def setUp():
+        bot = create_bot(config)
+
+    def tearDown():
+        pass
         
     def test_verify_channel():
         self.assertEqual(verify_channel("#chan"), "chan")

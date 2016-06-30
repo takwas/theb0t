@@ -26,6 +26,8 @@ help_template = """
 application_logger = logging.getLogger('application_logger')
 app_log_file_handler = logging.FileHandler('.application_log.log')
 app_log_file_handler.setLevel('DEBUG')
+app_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+app_log_file_handler.setFormatter(app_log_formatter)
 application_logger.addHandler(app_log_file_handler)
 
 
@@ -33,6 +35,8 @@ class LogBot(irc.IRCClient):
     """A logging IRC bot."""
 
     def  __init__(self, config):
+        application_logger.info('%r', config)
+        application_logger.info('Creating bot...')
         self.config = config
         self.nickname = config.BOTNICK
         self.channel = config.CHANNEL
@@ -41,52 +45,64 @@ class LogBot(irc.IRCClient):
         self.qs_queue = QuestionQueue()
         self.links_reload()
         self.logger = get_logger_instance(self)
+        application_logger.info('Logging bot finished initializing.')
 
     def clearqueue(self):
         self.qs_queue.clear()
+        application_logger.info('Question queue cleared!')
 
     def connectionMade(self):
+        application_logger.info('Connection made!')
         irc.IRCClient.connectionMade(self)
         self.islogging = False
         self._namescallback = {}
 
-    def startlogging(self, user, msg):
+    def startlogging(self, user):
+        # setup and begin logging a class session
+        application_logger.info('About to start logging class session...')
         try:
-            # setup and begin logging a class session
             self.logger.create_new_log()
             self.logger.log("[## Class Started at %s ##]" %
                         time.asctime(time.localtime(time.time())))
             #user = User(self, user) # parse user object from given hostmask `user`
-            self.logger.log("<%s> %s" % (user.nick, msg)) # log the issuer of this command and the command (message)
+            #self.logger.log("<%s> %s" % (user.nick, msg)) # log the issuer of this command and the command (message)
             self.islogging = True
-            self.log_issuer = user
+            application_logger.info('Class session logging started successfully!')
         except:
+            application_logger.error('Class session logging failed to start!', exc_info=True)
             return False
         return True
 
-    def stoplogging(self, channel):
+    def stoplogging(self):
+        # end logging for a class session
+        application_logger.info('About to stop logging class session...')
         try:
-            # end logging for a class session
             if not self.logger:
                 return
             #user = User(self, user) # parse user object from given hostmask `user`
-            self.logger.log("<%s> %s" % (user.nick, msg)) # log the issuer of this command and the command (message)
+            #self.logger.log("<%s> %s" % (user.nick, msg)) # log the issuer of this command and the command (message)
             self.logger.log("[## Class Ended at %s ##]" %
                             time.asctime(time.localtime(time.time())))
-            self.logger.close()
+            #self.logger.close()
             #self.upload_logs(channel)
+            self.last_log_filename = self.logger.filename
             self.islogging = False
+            application_logger.info('Class session logging stopped successfully! Log saved at: %s', self.last_log_filename)
         except:
+            application_logger.error('Class session logging failed to stop!', exc_info=True)
             return False
         return True
 
     def connectionLost(self, reason):
+        """Called when bot looses connection to the server."""
+        application_logger.warning('Connection lost! Will stop logging. Reason: %s', reason)
         irc.IRCClient.connectionLost(self, reason)
-        self.islogging = False
+        self.stoplogging()
 
     def signedOn(self):
         """Called when bot has succesfully signed on to server."""
         self.join(self.channel)
+        application_logger.info('Connected to server and joined channel: %s', self.channel)
 
     def pingall(self, nicklist):
         """Called to ping all with a message"""
@@ -100,13 +116,16 @@ class LogBot(irc.IRCClient):
         self.links_data = json.load(link_file)
         link_file.close()
 
-
-    # IRC callbacks
+    # Override say() so we can add logging to it
+    def say(self, channel, msg, *args, **kwargs):
+        application_logger.info('Bot said: %s\nIn channel: %s', msg, channel)
+        irc.IRCClient.say(self, channel, msg, *args, **kwargs)
 
     def privmsg(self, hostmask, channel, msg):
         """This will get called when the bot receives a message."""
         user = User(self, hostmask) # parse user object from given hostmask `user`
         msg = msg.strip()
+        application_logger.info('Bot received message: %s\nFrom: %s\nIn channel: %s', msg, user.nick, channel)
 
         if self.islogging:
             self.logger.log('<%s> %s' % (user.nick, msg))
@@ -119,9 +138,10 @@ class LogBot(irc.IRCClient):
             # Message is a private message from an admin
                 if msg.lower().endswith('startclass'):
                     if not self.islogging:
-                        if self.startlogging(user, msg):
+                        if self.startlogging():
                             self.msg(user.nick, 'Session logging started successfully!')
                             self.say(self.channel, self.config.SESSION_START_MSG)
+                            self.log_issuer = user
                         else:
                             self.msg(user.nick, 'Logging failed to start!')
                     else:
@@ -129,7 +149,7 @@ class LogBot(irc.IRCClient):
                             'Session logging already started by %s. No extra logging started.' %self.log_issuer.nick)
                     
                 if msg.lower().endswith('endclass'):
-                    if stoplogging(user, msg):
+                    if stoplogging():
                         self.msg(user.nick, 'Session logging terminated successfully!')
                         self.say(self.channel, self.config.SESSION_END_MSG)
                     else:
@@ -139,7 +159,10 @@ class LogBot(irc.IRCClient):
                 self.clearqueue()
                 self.say(self.channel, "Queue is cleared.")
             
-            elif msg == 'next':
+            elif msg == 'next' and not self.islogging:
+                self.say(self.channel, '%s: No session is going on. No one is in queue.' % user.nick)
+
+            elif msg == 'next' and self.islogging:
                 if self.qs_queue.has_next():
                     print 'Queue-pop: %r' %self.qs_queue # DEBUG
                     user = self.qs_queue.pop_next()
@@ -180,19 +203,24 @@ class LogBot(irc.IRCClient):
         # User wants to ask a question
         if msg == '!'  and self.islogging:
             self.qs_queue.append(user)
-            print 'Queue-append: %r' %self.qs_queue # DEBUG
 
         elif msg == '!' and not self.islogging:
             self.say(self.channel, '%s: no session is going on, feel free to ask a question. You do not have to type !' % user.nick)
         # end processing question indicator    
 
         elif msg == 'givemelogs':
-            sys.argv = ['fpaste', self.filename]
-            try:
-                short_url, url = fpaste.main()
-                self.msg(user.nick, url)
-            except:
-                self.msg(user.nick, 'Hit a 500! I have a crash on you.')
+            if not self.last_log_filename:
+                self.msg(user.nick, 'Sorry, I do not have the last log.')
+                application_logger.warning('Could not find last class log!')
+            else:
+                sys.argv = ['fpaste', self.last_log_filename]
+                try:
+                    short_url, url = fpaste.main()
+                    application_logger.info('Class Log uploaded; and Fedora Paste returned:\n\tShort URL: %s\n\tLong URL: %s', short_url, url)
+                    self.msg(user.nick, url)
+                except:
+                    self.msg(user.nick, 'Hit a 500! I have a crash on you.')
+                    application_logger.error('Log uploading to Fedora failed!', exc_info=True)
         
         elif msg == 'help':
             for command, help_txt in commands.iteritems():
@@ -212,13 +240,14 @@ class LogBot(irc.IRCClient):
         if self.islogging:
             self.logger.log("* %s %s" % (user.nick, msg))
 
+    # IRC callbacks
+
     def irc_NICK(self, prefix, params):
         """Called when an IRC user changes their nickname."""
         old_nick = prefix.split('!')[0]
         new_nick = params[0]
         if self.islogging:
             self.logger.log("%s is now known as %s" % (old_nick, new_nick))
-
 
     # For fun, override the method that determines how a nickname is changed on
     # collisions. The default method appends an underscore.
@@ -294,6 +323,7 @@ class QuestionQueue(list):
 
     def clear(self):
         self.__delslice__(0, len(self))
+        application_logger.info('Question queue cleared!')
 
 
 class User(object):
@@ -305,9 +335,12 @@ class User(object):
         self.hostmask = user_hostmask
         hostmask_pattern = re.compile(r'\w*![~\w]*@\w*')
         if hostmask_pattern.search(user_hostmask):
-            self.nick, ident, self.mask = re.split('[!@]', user_hostmask) # split into nick, ident, mask
+            self.nick, self.ident, self.mask = re.split('[!@]', user_hostmask) # split into nick, ident, mask
         else:
             raise InvalidUserError
+
+    def __repr__(self):
+        return 'User [Nick: %s; Ident: %s; Mask: %s]' %(self.nick, self.ident, self.mask)
 
     def is_admin(self):
         return self.nick in self.bot.channel_admins_list

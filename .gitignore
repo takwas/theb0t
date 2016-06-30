@@ -2,3 +2,4 @@ Log*
 *.pyc
 nohup.out
 gitnore
+*log

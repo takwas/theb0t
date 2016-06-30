@@ -6,7 +6,7 @@ from . import config
 
 class LogBotTest(unittest.Test):
 
-    bot = LogBot(config.DEFAULT_CHANNEL_ADMINS[0])
+    bot = LogBot(config)
 
     def test_names(self):
 
