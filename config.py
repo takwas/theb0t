@@ -18,8 +18,8 @@ def get_admins(default_admins):
 # Base configuration class that
 # will be extended
 class Config:
-    LOG_FILENAME_PREFIX = 'Logs-{}.txt'
-    LOGGER_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    LOG_FILENAME = 'Logs-{}.txt'
+    CLASS_LOGGER_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     LOG_PREFIX = '[{}]'
 
     SESSION_START_MSG = '----------SESSION STARTS----------'

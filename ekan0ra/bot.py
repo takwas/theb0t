@@ -3,7 +3,7 @@
 import os
 import sys
 import time
-import datetime
+from datetime import datetime
 import json
 import re
 import logging
@@ -25,16 +25,17 @@ help_template = """
 {command} - {help_text}
 """
 
-application_logger = logging.getLogger('application_logger')
+application_logger = logging.getLogger('logbot')
 app_log_file_handler = logging.FileHandler('.application_log.log')
 app_console_handler = logging.StreamHandler(sys.stdout)
 app_log_file_handler.setLevel('INFO')
 app_console_handler.setLevel('DEBUG')
-app_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+app_log_formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s\n')
 app_log_file_handler.setFormatter(app_log_formatter)
 app_console_handler.setFormatter(app_log_formatter)
 application_logger.addHandler(app_log_file_handler)
 application_logger.addHandler(app_console_handler)
+application_logger.setLevel('DEBUG')
 
 
 class LogBot(irc.IRCClient):
@@ -50,7 +51,7 @@ class LogBot(irc.IRCClient):
         self.channel_admins_list = config.ADMINS
         self.qs_queue = QuestionQueue()
         self.links_reload()
-        self.logger = get_logger_instance(self)
+        self.logger = get_logger_instance()
         application_logger.info('Logging bot finished initializing.')
 
     def clearqueue(self):
@@ -67,7 +68,10 @@ class LogBot(irc.IRCClient):
         # setup and begin logging a class session
         application_logger.info('About to start logging class session...')
         try:
-            self.logger.create_new_log()
+            self.logger.create_new_log(
+                self.config.LOG_FILENAME.format(datetime.now().strftime("%Y-%m-%d-%H-%M")),
+                self.config.CLASS_LOGGER_FORMAT
+            )
             self.logger.log("[## Class Started at %s ##]" %
                         time.asctime(time.localtime(time.time())))
             #user = User(self, user) # parse user object from given hostmask `user`
@@ -75,6 +79,7 @@ class LogBot(irc.IRCClient):
             self.islogging = True
             application_logger.info('Class session logging started successfully!')
             if topic:
+                print topic
                 irc.IRCClient.topic(self, topic)
         except:
             application_logger.error('Class session logging failed to start!', exc_info=True)
@@ -143,9 +148,10 @@ class LogBot(irc.IRCClient):
         """This will get called when the bot receives a message."""
         user = User(self, hostmask) # parse user object from given hostmask `user`
         msg = msg.strip()
-        application_logger.info('Bot received message: %s\nFrom: %s\nIn channel: %s', msg, user.nick, channel)
+        application_logger.info('\nMessage.\t%s\nFrom:\t%s\nChannel:\t%s', msg, user.nick, channel)
 
-        if self.islogging:
+        if self.islogging and not channel == self.nickname:
+            # Don't log private messages with class log
             self.logger.log('<%s> %s' % (user.nick, msg))
 
         # is the message sender an admin
@@ -222,7 +228,7 @@ class LogBot(irc.IRCClient):
             self.qs_queue.append(user)
 
         elif msg == '!' and not self.islogging:
-            self.say(self.channel, '%s: no session is going on, feel free to ask a question. You do not have to type !' % user.nick)
+            self.say(self.channel, '%s: No session is going on, feel free to ask a question. You do not have to type !' % user.nick)
         # end processing question indicator    
 
         elif msg == 'givemelogs':
