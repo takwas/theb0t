@@ -69,12 +69,12 @@ class LogBot(irc.IRCClient):
         try:
             self.logger.create_new_log(
                 self.config.LOG_FILENAME.format(
-                    datetime.now().strftime("%Y-%m-%d-%H-%M")
+                    datetime.now().strftime('%Y-%m-%d-%H-%M')
                 ),
                 self.config.CLASS_LOGGER_FORMAT
             )
             self.logger.log(
-                "[## Class Started at %s ##]" % 
+                '[## Class Started at %s ##]' % 
                     time.asctime(time.localtime(time.time()))
             )
             self.islogging = True
@@ -98,7 +98,7 @@ class LogBot(irc.IRCClient):
             if not self.logger:
                 return
             self.logger.log(
-                "[## Class Ended at %s ##]" %
+                '[## Class Ended at %s ##]' %
                     time.asctime(time.localtime(time.time()))
             )
             #self.logger.close()
@@ -211,7 +211,7 @@ class LogBot(irc.IRCClient):
 
             elif msg == 'clearqueue':
                 self.clearqueue()
-                self.say(self.channel, "Queue is cleared.")
+                self.say(self.channel, 'Queue is cleared.')
             
             elif msg == 'next' and not self.islogging:
                 self.say(
@@ -229,13 +229,13 @@ class LogBot(irc.IRCClient):
                             'question.' % (msg, self.qs_queue.pop_next().nick)
                     self.say(self.channel, msg)
                 else:
-                    self.say(self.channel, "No one is in queue.")
+                    self.say(self.channel, 'No one is in queue.')
 
             elif msg == 'masters':
                 self.say(
                     self.channel,
-                    "My current masters are: %s" %
-                        ",".join(self.channel_admins_list)
+                    'My current masters are: %s' %
+                        ','.join(self.channel_admins_list)
                 )
 
             elif msg.startswith('add:'):
