@@ -1,6 +1,8 @@
 
 # standard library imports
-import time, sys, os
+import os
+import sys
+import time
 import datetime
 import json
 import re
@@ -25,10 +27,14 @@ help_template = """
 
 application_logger = logging.getLogger('application_logger')
 app_log_file_handler = logging.FileHandler('.application_log.log')
-app_log_file_handler.setLevel('DEBUG')
+app_console_handler = logging.StreamHandler(sys.stdout)
+app_log_file_handler.setLevel('INFO')
+app_console_handler.setLevel('DEBUG')
 app_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 app_log_file_handler.setFormatter(app_log_formatter)
+app_console_handler.setFormatter(app_log_formatter)
 application_logger.addHandler(app_log_file_handler)
+application_logger.addHandler(app_console_handler)
 
 
 class LogBot(irc.IRCClient):
@@ -52,12 +58,12 @@ class LogBot(irc.IRCClient):
         application_logger.info('Question queue cleared!')
 
     def connectionMade(self):
-        application_logger.info('Connection made!')
+        application_logger.debug('Connection made!')
         irc.IRCClient.connectionMade(self)
         self.islogging = False
         self._namescallback = {}
 
-    def startlogging(self, user):
+    def startlogging(self, topic=None):
         # setup and begin logging a class session
         application_logger.info('About to start logging class session...')
         try:
@@ -68,6 +74,8 @@ class LogBot(irc.IRCClient):
             #self.logger.log("<%s> %s" % (user.nick, msg)) # log the issuer of this command and the command (message)
             self.islogging = True
             application_logger.info('Class session logging started successfully!')
+            if topic:
+                irc.IRCClient.topic(self, topic)
         except:
             application_logger.error('Class session logging failed to start!', exc_info=True)
             return False
@@ -95,14 +103,14 @@ class LogBot(irc.IRCClient):
 
     def connectionLost(self, reason):
         """Called when bot looses connection to the server."""
-        application_logger.warning('Connection lost! Will stop logging. Reason: %s', reason)
+        application_logger.warning('Connection lost! Will stop logging.\nReason: %s', reason)
         irc.IRCClient.connectionLost(self, reason)
         self.stoplogging()
 
     def signedOn(self):
         """Called when bot has succesfully signed on to server."""
         self.join(self.channel)
-        application_logger.info('Connected to server and joined channel: %s', self.channel)
+        application_logger.debug('Connected to server and joined channel: %s', self.channel)
 
     def pingall(self, nicklist):
         """Called to ping all with a message"""
@@ -118,8 +126,18 @@ class LogBot(irc.IRCClient):
 
     # Override say() so we can add logging to it
     def say(self, channel, msg, *args, **kwargs):
+        """Send `msg` to `channel` (user/channel)."""
         application_logger.info('Bot said: %s\nIn channel: %s', msg, channel)
         irc.IRCClient.say(self, channel, msg, *args, **kwargs)
+
+    def setTopic(self, topic):
+        """Modify the topic of the channel."""
+        topic = self.config.BASE_TOPIC + ' | ' + topic
+        irc.IRCClient.topic(self, self.channel, topic)
+
+    def resetTopic(self):
+        """Reset the channel's topic to its default"""
+        selfTopic(self, self.config.BASE_TOPIC)
 
     def privmsg(self, hostmask, channel, msg):
         """This will get called when the bot receives a message."""
@@ -136,9 +154,10 @@ class LogBot(irc.IRCClient):
 
             if channel == self.nickname:
             # Message is a private message from an admin
-                if msg.lower().endswith('startclass'):
+                if msg.lower().startswith('startclass'):
                     if not self.islogging:
-                        if self.startlogging():
+                        topic = msg[msg.find(' '):].strip()
+                        if self.startlogging(topic):
                             self.msg(user.nick, 'Session logging started successfully!')
                             self.say(self.channel, self.config.SESSION_START_MSG)
                             self.log_issuer = user
@@ -149,7 +168,7 @@ class LogBot(irc.IRCClient):
                             'Session logging already started by %s. No extra logging started.' %self.log_issuer.nick)
                     
                 if msg.lower().endswith('endclass'):
-                    if stoplogging():
+                    if self.stoplogging():
                         self.msg(user.nick, 'Session logging terminated successfully!')
                         self.say(self.channel, self.config.SESSION_END_MSG)
                     else:
@@ -164,12 +183,10 @@ class LogBot(irc.IRCClient):
 
             elif msg == 'next' and self.islogging:
                 if self.qs_queue.has_next():
-                    print 'Queue-pop: %r' %self.qs_queue # DEBUG
                     user = self.qs_queue.pop_next()
-                    print 'User: %r' %user # DEBUG
-                    msg = "%s: please ask your question." % user.nick
+                    msg = "%s: Please ask your question." % user.nick
                     if self.qs_queue.has_next():
-                        msg = "%s. %s you are next. Get ready with your question." % (msg, self.qs_queue.pop_next().nick)
+                        msg = "%s\n%s: You are next. Get ready with your question." % (msg, self.qs_queue.pop_next().nick)
                     self.say(self.channel, msg)
                 else:
                     self.say(self.channel, "No one is in queue.")
@@ -324,6 +341,16 @@ class QuestionQueue(list):
     def clear(self):
         self.__delslice__(0, len(self))
         application_logger.info('Question queue cleared!')
+
+
+# class Attendance(list):
+
+#     def __init__(self):
+#         self.mylist = list()
+#     def addUser(self, user):
+#         self.mylist.append(user)
+#         time_in = datetime.datetime.now()
+#         self.record[user.nick] = user, timein
 
 
 class User(object):

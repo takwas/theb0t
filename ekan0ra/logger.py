@@ -1,6 +1,6 @@
 
 # standard library imports
-import time
+import time, sys
 from datetime import datetime
 import logging
 
@@ -19,12 +19,12 @@ class MessageLogger(object):
         now = datetime.now()
         timestamp = now.strftime("%Y-%m-%d-%H-%M")
         self.filename = self.bot.config.LOG_FILENAME_PREFIX.format(timestamp)
-        log_file_handler = logging.FileHandler(filename)
+        log_file_handler = logging.FileHandler(self.filename)
         log_file_handler.setLevel(logging.INFO)
-        log_console_handler = logging.StreamHandler()
+        log_console_handler = logging.StreamHandler(sys.stdout)
         log_console_handler.setLevel(logging.ERROR)
         log_formatter = logging.Formatter(self.bot.config.LOGGER_FORMAT)
-        log_file_handler.setFormatter(log_formatter)
+        #log_file_handler.setFormatter(log_formatter)
         log_console_handler.setFormatter(log_formatter)
 
         self.logger.addHandler(log_file_handler)
@@ -33,7 +33,9 @@ class MessageLogger(object):
     def log(self, message):
         """Log `message` to a log file."""
         timestamp = time.strftime("%H:%M:%S", time.localtime(time.time()))
-        self.logger.info(' '.join([self.bot.config.LOG_PREFIX.format(timestamp), message]))
+        log_msg =  ' '.join([self.bot.config.LOG_PREFIX.format(timestamp), message])
+        print "logging now...", log_msg
+        self.logger.info(log_msg)
 
 
 # Get logger instance

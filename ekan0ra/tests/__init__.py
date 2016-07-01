@@ -8,7 +8,7 @@
 #import unittest
 
 # local imports
-from .. import config as conf
+from .ekan0ra import config as conf
 
 
 config = conf.config_modes.get('test')
