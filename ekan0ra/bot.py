@@ -5,7 +5,6 @@ import sys
 import time
 from datetime import datetime
 import json
-import re
 import logging
 
 # library imports
@@ -14,6 +13,8 @@ from twisted.internet import defer
 
 # local imports
 #from ekan0ra import config
+from user import User, InvalidUserError
+from queue import QuestionQueue
 from commands import commands
 from logger import get_logger_instance
 import fpaste
@@ -47,7 +48,7 @@ class LogBot(irc.IRCClient):
         self.config = config
         self.nickname = config.BOTNICK
         self.channel = config.CHANNEL
-        self.channel_admins_list = config.ADMINS # IRC users who can control this bot
+        self.channel_admins_list = list(config.ADMINS) # IRC users who can control this bot
         self.qs_queue = QuestionQueue()
         self.links_reload()
         self.logger = get_logger_instance()
@@ -82,8 +83,7 @@ class LogBot(irc.IRCClient):
                 'Class session logging started successfully!'
             )
             if topic:
-                print topic
-                irc.IRCClient.topic(self, topic)
+                self.setTopic(topic)
         except:
             application_logger.error(
                 'Class session logging failed to start!', exc_info=True
@@ -110,6 +110,7 @@ class LogBot(irc.IRCClient):
                     'at: %s',
                 self.last_log_filename
             )
+            self.resetTopic()
         except:
             application_logger.error(
                 'Class session logging failed to stop!', exc_info=True
@@ -145,20 +146,21 @@ class LogBot(irc.IRCClient):
         self.links_data = json.load(link_file)
         link_file.close()
 
-    # Override say() so we can add logging to it
+    # Override msg() so we can add logging to it
     def say(self, channel, msg, *args, **kwargs):
         """Send `msg` to `channel` (user/channel)."""
         application_logger.info('Bot said: %s\nIn channel: %s', msg, channel)
-        irc.IRCClient.say(self, channel, msg, *args, **kwargs)
+        irc.IRCClient.msg(self, channel, msg, *args, **kwargs)
 
     def setTopic(self, topic):
         """Modify the topic of the channel."""
         topic = self.config.BASE_TOPIC + ' | ' + topic
+        application_logger.info('Bot changed channel topic to: %s', topic)
         irc.IRCClient.topic(self, self.channel, topic)
 
     def resetTopic(self):
         """Reset the channel's topic to its default"""
-        selfTopic(self, self.config.BASE_TOPIC)
+        self.setTopic(self.config.BASE_TOPIC)
 
     def privmsg(self, hostmask, channel, msg):
         """This will get called when the bot receives a message."""
@@ -243,9 +245,15 @@ class LogBot(irc.IRCClient):
                     nick = msg.split()[1]
                     print nick # DEBUG
                     # is nick valid
-                    self.channel_admins_list.append(nick)
-                    self.say(self.channel,'%s is a master now.' % name)
-                    application_logger.info('%s became an admin.', nick)
+                    if nick in self.channel_admins_list:
+                        self.say(
+                            self.channel, '%s is already a master.' % nick)
+                        application_logger.info('%s is already an admin.',
+                            nick)
+                    else:
+                        self.channel_admins_list.append(nick)
+                        self.say(self.channel,'%s is a master now.' % nick)
+                        application_logger.info('%s became an admin.', nick)
                 except Exception, err:
                     application_logger.error(
                         'Error adding admin!', exc_info=True
@@ -258,6 +266,7 @@ class LogBot(irc.IRCClient):
                         lambda x: x.lower() != nick.lower(),
                         self.channel_admins_list
                     )
+                    self.say(self.channel, '%s removed from admin.' % nick)
                     application_logger.info('%s removed from admin.', nick)
                 except Exception, err:
                     application_logger.error(
@@ -392,56 +401,3 @@ class LogBot(irc.IRCClient):
         del self._namescallback[channel]
 
 
-class QuestionQueue(list):
-
-    def has_next(self):
-        return len(self) > 0
-
-    def next(self):
-        """Get next item on queue, but don't remove from queue."""
-        if self.has_next():
-            return self[0]
-        else:
-            return None
-
-    def pop_next(self):
-        """Get next item on queue,and also remove same from queue."""
-        if self.has_next():
-            return self.pop(0)
-        else:
-            return None
-
-    def clear(self):
-        self.__delslice__(0, len(self))
-        application_logger.info('Question queue cleared!')
-
-
-class User(object):
-    """
-    Represents a `User` object; contains info about user:
-        nick,
-        ident,
-        mask
-    """
-
-    # 'hostmask' is of the form: username!ident@hostmask
-    # Every user has access to the bot object
-    def __init__(self, bot, user_hostmask):
-        self.bot = bot
-        self.hostmask = user_hostmask
-        hostmask_pattern = re.compile(r'\w*![~\w]*@\w*')
-        if hostmask_pattern.search(user_hostmask):
-            self.nick, self.ident, self.mask = re.split('[!@]', user_hostmask) # split into nick, ident, mask
-        else:
-            raise InvalidUserError
-
-    def __repr__(self):
-        return 'User [Nick: %s; Ident: %s; Mask: %s]' % (self.nick, self.ident, self.mask)
-
-    def is_admin(self):
-        """Ask bot who created this `User` if they've made this `User` an admin."""
-        return self.nick in self.bot.channel_admins_list
-
-
-class InvalidUserError(Exception):
-    pass

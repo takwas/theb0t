@@ -39,9 +39,9 @@ class MessageLogger(object):
         self.logger.info(log_msg)
 
     def close(self):
-        self.logger.shutdown()
+        logging.shutdown()
 
 
 # Get logger instance
 def get_logger_instance():
-        return MessageLogger()
+    return MessageLogger()
