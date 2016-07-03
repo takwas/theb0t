@@ -1,7 +1,7 @@
 import re
 
 
-class User(object):
+class IRCUser(object):
     """
     Represents a `User` object; contains info about user:
         nick,

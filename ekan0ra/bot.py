@@ -13,7 +13,7 @@ from twisted.internet import defer
 
 # local imports
 #from ekan0ra import config
-from user import User, InvalidUserError
+from user import IRCUser, InvalidUserError
 from queue import QuestionQueue
 from commands import commands
 from logger import get_logger_instance
@@ -164,7 +164,7 @@ class LogBot(irc.IRCClient):
 
     def privmsg(self, hostmask, channel, msg):
         """This will get called when the bot receives a message."""
-        user = User(self, hostmask) # parse user object from given hostmask `user`
+        user = IRCUser(self, hostmask) # parse user object from given hostmask `user`
         msg = msg.strip()
         application_logger.info(
             '\nMessage.\t%s\nFrom:\t%s\nChannel:\t%s', msg, user.nick, channel
@@ -224,11 +224,11 @@ class LogBot(irc.IRCClient):
 
             elif msg == 'next' and self.islogging:
                 if self.qs_queue.has_next():
-                    user = self.qs_queue.pop_next()
-                    msg = '%s: Please ask your question.' % user.nick
+                    nick = self.qs_queue.pop_next()
+                    msg = '%s: Please ask your question.' % nick
                     if self.qs_queue.has_next():
                         msg = '%s\n%s: You are next. Get ready with your' \
-                            'question.' % (msg, self.qs_queue.pop_next().nick)
+                            'question.' % (msg, self.qs_queue.next())
                     self.say(self.channel, msg)
                 else:
                     self.say(self.channel, 'No one is in queue.')
@@ -281,15 +281,19 @@ class LogBot(irc.IRCClient):
 
         # User wants to ask a question
         if msg == '!'  and self.islogging:
-            self.qs_queue.append(user)
+            self.qs_queue.append(user.nick)
 
-        elif msg == '!' and not self.islogging:
+        # User no longer wants to ask a question; remove them from queue
+        elif msg in ('!-', '!!')  and self.islogging:
+            self.qs_queue.remove_user(user.nick)
+
+        elif msg in ('!', '!-', '!!') and not self.islogging:
             self.say(
                 self.channel,
                 '%s: No session is going on, feel free to ask a question. You'
-                    ' do not have to type !' % user.nick
+                    ' do not have to type %s' % (user.nick, msg)
             )
-        # end processing question indicator    
+        # end processing question indicator   
 
         elif msg == 'givemelogs':
             if not self.last_log_filename:
@@ -324,7 +328,7 @@ class LogBot(irc.IRCClient):
 
     def action(self, hostmask, channel, msg):
         """This will get called when the bot sees someone do an action."""
-        user = User(self, hostmask) # parse user object from given hostmask `user`
+        user = IRCUser(self, hostmask) # parse user object from given hostmask `user`
         if self.islogging:
             self.logger.log('* %s %s' % (user.nick, msg))
 
