@@ -5,6 +5,6 @@ To Run:
 $ python run.py
 
 Options:
-startclass in the bot's pm.
-endclass in bot's pm.
-pingall - pingall: [message]
+`startclass` in the bot's pm.
+`endclass` in bot's pm.
+`pingall` - pingall: [message]

@@ -176,7 +176,7 @@ class LogBot(irc.IRCClient):
 
         # is the message sender an admin
         if user.is_admin():
-            # process message from admin
+        # process message from admin
 
             if channel == self.nickname:
             # Message is a private message from an admin
@@ -228,7 +228,7 @@ class LogBot(irc.IRCClient):
                     msg = '%s: Please ask your question.' % nick
                     if self.qs_queue.has_next():
                         msg = '%s\n%s: You are next. Get ready with your' \
-                            'question.' % (msg, self.qs_queue.next())
+                            'question.' % (msg, self.qs_queue.peek_next())
                     self.say(self.channel, msg)
                 else:
                     self.say(self.channel, 'No one is in queue.')
@@ -276,16 +276,16 @@ class LogBot(irc.IRCClient):
             elif msg.lower().startswith('pingall:'):
                 self.pingmsg = msg.lower().lstrip('pingall:')
                 self.names(channel).addCallback(self.pingall)
-            # end processing admin message
+        # end processing admin message
 
 
         # User wants to ask a question
         if msg == '!'  and self.islogging:
-            self.qs_queue.append(user.nick)
+            self.qs_queue.enqueue(user.nick)
 
         # User no longer wants to ask a question; remove them from queue
         elif msg in ('!-', '!!')  and self.islogging:
-            self.qs_queue.remove_user(user.nick)
+            self.qs_queue.dequeue(user.nick)
 
         elif msg in ('!', '!-', '!!') and not self.islogging:
             self.say(
@@ -376,18 +376,19 @@ class LogBot(irc.IRCClient):
         keyword = msg.split()[1]
         if not keyword:
             self.say(
-                self.channel, '.link need a keyword. Check help for details'
+                self.channel, '.link needs an keyword as argument. Check help for details.'
             )
 
         if keyword == 'reload':
             self.links_reload()
         else:
-            self.say(self.channel,
+            self.say(
+                self.channel,
                 str(
                     self.links_data.get(
                         str(keyword),
-                        'Keyword does not exist! Type [.link help] or '
-                            '[.link -l] to see valid keywords'
+                        'Keyword "%s" does not exist! Type [.link help] or '
+                            '[.link -l] to see valid keywords' % keyword
                     )
                 )
             )

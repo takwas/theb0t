@@ -1,9 +1,23 @@
 class QuestionQueue(list):
 
+    def enqueue(self, nick):
+        """Add nick to queue."""
+        self.append(nick)
+
+    def dequeue(self, nick):
+        """
+        Go from tail to head and remove first matching nick in queue.
+        """
+        for i in range(-1, -len(self)-1, -1):
+            if (a[i] == nick):
+                del a[i]
+                break
+
     def has_next(self):
+        """Check if queue has at least one item."""
         return len(self) > 0
 
-    def next(self):
+    def peek_next(self):
         """Get next item on queue, but don't remove from queue."""
         if self.has_next():
             return self[0]
@@ -17,14 +31,8 @@ class QuestionQueue(list):
         else:
             return None
 
-    def remove_user(self, nick):
-        for i in range(-1, -len(self)-1, -1):
-            if (a[i] == nick):
-                del a[i]
-                break
-
     def clear(self):
+        """Clear all items from queue."""
         self.__delslice__(0, len(self))
-        application_logger.info('Question queue cleared!')
 
 
