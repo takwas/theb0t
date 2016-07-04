@@ -12,7 +12,6 @@ from twisted.words.protocols import irc
 from twisted.internet import defer
 
 # local imports
-#from ekan0ra import config
 from user import IRCUser, InvalidUserError
 from queue import QuestionQueue
 from commands import commands
@@ -22,27 +21,33 @@ import utils
 
 
 # globals
-help_template = """
-{command} - {help_text}
-"""
+help_template = """{command} - {help_text}"""
 
-application_logger = logging.getLogger('logbot')
-app_log_file_handler = logging.FileHandler('.application_log.log')
-app_console_handler = logging.StreamHandler(sys.stdout)
-app_log_file_handler.setLevel('INFO')
-app_console_handler.setLevel('DEBUG')
-app_log_formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s\n')
-app_log_file_handler.setFormatter(app_log_formatter)
-app_console_handler.setFormatter(app_log_formatter)
-application_logger.addHandler(app_log_file_handler)
-application_logger.addHandler(app_console_handler)
-application_logger.setLevel('DEBUG')
+application_logger = logging.getLogger('logbot_logger')
+
+def create_app_logger(config):
+    if not os.path.exists(config.APP_LOG_DIR):
+        os.mkdir(config.APP_LOG_DIR)
+    log_file_path = os.path.join(config.APP_LOG_DIR, config.APP_LOGGER_NAME)
+
+    app_log_file_handler = logging.FileHandler(log_file_path)
+    app_console_handler = logging.StreamHandler(sys.stdout)
+    app_log_file_handler.setLevel('INFO')
+    app_console_handler.setLevel('DEBUG')
+    app_log_formatter = logging.Formatter(
+        '%(name)s - %(levelname)s - %(message)s\n')
+    app_log_file_handler.setFormatter(app_log_formatter)
+    app_console_handler.setFormatter(app_log_formatter)
+    application_logger.addHandler(app_log_file_handler)
+    application_logger.addHandler(app_console_handler)
+    application_logger.setLevel('DEBUG')
 
 
 class LogBot(irc.IRCClient):
     """A logging IRC bot."""
 
     def  __init__(self, config):
+        create_app_logger(config)
         application_logger.info('%r', config)
         application_logger.info('Creating bot...')
         self.config = config
@@ -68,12 +73,16 @@ class LogBot(irc.IRCClient):
         # setup and begin logging a class session
         application_logger.info('About to start logging class session...')
         try:
-            self.logger.create_new_log(
+            if not os.path.exists(self.config.CLASS_LOG_DIR):
+                os.mkdir(self.config.CLASS_LOG_DIR)
+            log_file_path = os.path.join(
+                self.config.CLASS_LOG_DIR,
                 self.config.LOG_FILENAME.format(
                     datetime.now().strftime('%Y-%m-%d-%H-%M')
-                ),
-                self.config.CLASS_LOGGER_FORMAT
+                )
             )
+            self.logger.create_new_log(
+                log_file_path, self.config.CLASS_LOGGER_FORMAT)
             self.logger.log(
                 '[## Class Started at %s ##]' % 
                     time.asctime(time.localtime(time.time()))
@@ -106,7 +115,7 @@ class LogBot(irc.IRCClient):
             self.last_log_filename = self.logger.filename
             self.islogging = False
             application_logger.info(
-                'Class session logging stopped successfully! Log saved '
+                'Class session logging stopped successfully!\nLog saved '
                     'at: %s',
                 self.last_log_filename
             )
@@ -124,7 +133,8 @@ class LogBot(irc.IRCClient):
             'Connection lost! Will stop logging.\nReason: %s', reason
         )
         irc.IRCClient.connectionLost(self, reason)
-        self.stoplogging()
+        if self.islogging:
+            self.stoplogging()
 
     def signedOn(self):
         """Called when bot has succesfully signed on to server."""
@@ -142,9 +152,14 @@ class LogBot(irc.IRCClient):
 
     # To reload json file
     def links_reload(self):
-        link_file = open('links.json')
-        self.links_data = json.load(link_file)
-        link_file.close()
+        try:
+            link_file = open(self.config.LINKS_FILE)
+            self.links_data = json.load(link_file)
+            link_file.close()
+            application_logger.info('Links file reloaded.')
+        except:
+            application_logger.error('Error reloading links file.',
+                exc_info=True)
 
     # Override msg() so we can add logging to it
     def say(self, channel, msg, *args, **kwargs):
@@ -167,7 +182,7 @@ class LogBot(irc.IRCClient):
         user = IRCUser(self, hostmask) # parse user object from given hostmask `user`
         msg = msg.strip()
         application_logger.info(
-            '\nMessage.\t%s\nFrom:\t%s\nChannel:\t%s', msg, user.nick, channel
+            '\nMessage:\t%s\nFrom:\t%s\nChannel:\t%s', msg, user.nick, channel
         )
 
         if self.islogging and not channel == self.nickname:
@@ -182,7 +197,11 @@ class LogBot(irc.IRCClient):
             # Message is a private message from an admin
                 if msg.lower().startswith('startclass'):
                     if not self.islogging:
-                        topic = msg[msg.find(' '):].strip()
+                        arg_pos = msg.find(' ')
+                        if arg_pos >= 0:
+                            topic = msg[arg_pos:].strip()
+                        else:
+                            topic = None
                         if self.startlogging(topic):
                             self.say(
                                 user.nick,
@@ -227,7 +246,7 @@ class LogBot(irc.IRCClient):
                     nick = self.qs_queue.pop_next()
                     msg = '%s: Please ask your question.' % nick
                     if self.qs_queue.has_next():
-                        msg = '%s\n%s: You are next. Get ready with your' \
+                        msg = '%s\n%s: You are next. Get ready with your ' \
                             'question.' % (msg, self.qs_queue.peek_next())
                     self.say(self.channel, msg)
                 else:
@@ -290,8 +309,8 @@ class LogBot(irc.IRCClient):
         elif msg in ('!', '!-', '!!') and not self.islogging:
             self.say(
                 self.channel,
-                '%s: No session is going on, feel free to ask a question. You'
-                    ' do not have to type %s' % (user.nick, msg)
+                '%s: No session is going on, feel free to ask a question. '
+                    'You do not have to type %s' % (user.nick, msg)
             )
         # end processing question indicator   
 
@@ -323,7 +342,7 @@ class LogBot(irc.IRCClient):
                     )
                 )      
 
-        elif msg.startswith('.link '):
+        elif msg.split()[0] == '.link':
             self.links_for_key(msg)
 
     def action(self, hostmask, channel, msg):
@@ -373,14 +392,27 @@ class LogBot(irc.IRCClient):
 
     # Function to return requested links
     def links_for_key(self, msg):
-        keyword = msg.split()[1]
-        if not keyword:
+        try:
+            keyword = msg.split()[1]
+            if not keyword:
+                raise IndexError
+        except IndexError:
+            application_logger.error(
+                'No keyword argument provided for `.link` command',
+                exc_info=True)
             self.say(
-                self.channel, '.link needs an keyword as argument. Check help for details.'
+                self.channel, '.link needs a keyword as argument. Check help for details.'
             )
+            return
 
         if keyword == 'reload':
             self.links_reload()
+        elif keyword in ['-l', 'help']:
+            self.say(
+                self.channel,
+                'Valid options for `.link`:\t[%s]' %
+                    str(', '.join(self.links_data.keys()))
+            )
         else:
             self.say(
                 self.channel,
