@@ -19,9 +19,9 @@ class LogBotFactory(protocol.ClientFactory):
         self.channel_admins_list = self.config.ADMINS
 
     def buildProtocol(self, addr):
-        bot = LogBot(self.config)
-        bot.factory = self
-        return bot
+        self.bot = LogBot(self.config)
+        self.bot.factory = self
+        return self.bot
 
     def clientConnectionLost(self, connector, reason):
         """If we get disconnected, reconnect to server."""

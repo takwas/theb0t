@@ -9,8 +9,8 @@ class QuestionQueue(list):
         Go from tail to head and remove first matching nick in queue.
         """
         for i in range(-1, -len(self)-1, -1):
-            if (a[i] == nick):
-                del a[i]
+            if (self[i] == nick):
+                del self[i]
                 break
 
     def has_next(self):

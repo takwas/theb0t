@@ -59,6 +59,15 @@ class LogBot(irc.IRCClient):
         self.logger = get_logger_instance()
         application_logger.info('Logging bot finished initializing.')
 
+    def add_admin(self, nick):
+        self.channel_admins_list.append(nick)
+
+    def remove_admin(self, nick):
+        self.channel_admins_list = filter(
+            lambda x : x.lower() != nick.lower(),
+            self.channel_admins_list            
+        )
+
     def clearqueue(self):
         self.qs_queue.clear()
         application_logger.info('Question queue cleared!')
@@ -144,7 +153,7 @@ class LogBot(irc.IRCClient):
         )
 
     def pingall(self, nicklist):
-        """Called to ping all with a message"""
+        """Called to ping all users with a message"""
         msg = ', '.join([nick for nick in nicklist if nick != self.nickname
                         and nick not in self.channel_admins_list])
         self.say(self.channel, msg)
@@ -195,7 +204,7 @@ class LogBot(irc.IRCClient):
 
             if channel == self.nickname:
             # Message is a private message from an admin
-                if msg.lower().startswith('startclass'):
+                if msg.lower().startswith('.startclass'):
                     if not self.islogging:
                         arg_pos = msg.find(' ')
                         if arg_pos >= 0:
@@ -210,17 +219,17 @@ class LogBot(irc.IRCClient):
                             self.say(
                                 self.channel, self.config.SESSION_START_MSG
                             )
-                            self.log_issuer = user
+                            self.log_issuer = user.nick
                         else:
                             self.say(user.nick, 'Logging failed to start!')
                     else:
                         self.say(
                             user.nick,
                             'Session logging already started by %s. No extra '
-                                'logging started.' % self.log_issuer.nick
+                                'logging started.' % self.log_issuer
                         )
                     
-                if msg.lower().endswith('endclass'):
+                if msg.lower().endswith('.endclass'):
                     if self.stoplogging():
                         self.say(
                             user.nick,
@@ -230,18 +239,18 @@ class LogBot(irc.IRCClient):
                     else:
                         self.say(user.nick, 'Logging failed to terminate!')
 
-            elif msg == 'clearqueue':
+            elif msg == '.clearqueue':
                 self.clearqueue()
                 self.say(self.channel, 'Queue is cleared.')
             
-            elif msg == 'next' and not self.islogging:
+            elif msg == '.next' and not self.islogging:
                 self.say(
                     self.channel,
                     '%s: No session is going on. No one is in queue.' %
                         user.nick
                 )
 
-            elif msg == 'next' and self.islogging:
+            elif msg == '.next' and self.islogging:
                 if self.qs_queue.has_next():
                     nick = self.qs_queue.pop_next()
                     msg = '%s: Please ask your question.' % nick
@@ -252,25 +261,23 @@ class LogBot(irc.IRCClient):
                 else:
                     self.say(self.channel, 'No one is in queue.')
 
-            elif msg == 'masters':
+            elif msg == '.masters':
                 self.say(
                     self.channel,
                     'My current masters are: %s' %
-                        ','.join(self.channel_admins_list)
+                        ', '.join(self.channel_admins_list)
                 )
 
-            elif msg.startswith('add:'):
+            elif msg.startswith('.add'):
                 try:
                     nick = msg.split()[1]
-                    print nick # DEBUG
-                    # is nick valid
                     if nick in self.channel_admins_list:
                         self.say(
                             self.channel, '%s is already a master.' % nick)
                         application_logger.info('%s is already an admin.',
                             nick)
                     else:
-                        self.channel_admins_list.append(nick)
+                        self.add_admin(nick)
                         self.say(self.channel,'%s is a master now.' % nick)
                         application_logger.info('%s became an admin.', nick)
                 except Exception, err:
@@ -278,13 +285,10 @@ class LogBot(irc.IRCClient):
                         'Error adding admin!', exc_info=True
                     )
 
-            elif msg.startswith('rm:'):
+            elif msg.startswith('.rm'):
                 try:
                     nick = msg.split()[1]
-                    self.channel_admins_list = filter(
-                        lambda x: x.lower() != nick.lower(),
-                        self.channel_admins_list
-                    )
+                    self.remove_admin(nick)
                     self.say(self.channel, '%s removed from admin.' % nick)
                     application_logger.info('%s removed from admin.', nick)
                 except Exception, err:
@@ -292,8 +296,8 @@ class LogBot(irc.IRCClient):
                         'Error removing admin!', exc_info=True
                     )
 
-            elif msg.lower().startswith('pingall:'):
-                self.pingmsg = msg.lower().lstrip('pingall:')
+            elif msg.lower().startswith('.pingall'):
+                self.pingmsg = msg.lower().lstrip('.pingall')
                 self.names(channel).addCallback(self.pingall)
         # end processing admin message
 
@@ -301,10 +305,14 @@ class LogBot(irc.IRCClient):
         # User wants to ask a question
         if msg == '!'  and self.islogging:
             self.qs_queue.enqueue(user.nick)
+            self.describe(
+                self.channel, 'Queue: [%r]' % ', '.join(self.qs_queue))
 
         # User no longer wants to ask a question; remove them from queue
         elif msg in ('!-', '!!')  and self.islogging:
             self.qs_queue.dequeue(user.nick)
+            self.describe(
+                self.channel, 'Queue: [%r]' % ', '.join(self.qs_queue))
 
         elif msg in ('!', '!-', '!!') and not self.islogging:
             self.say(
@@ -314,7 +322,7 @@ class LogBot(irc.IRCClient):
             )
         # end processing question indicator   
 
-        elif msg == 'givemelogs':
+        elif msg == '.givemelogs':
             if not self.last_log_filename:
                 self.say(user.nick, 'Sorry, I do not have the last log.')
                 application_logger.warning('Could not find last class log!')
@@ -333,16 +341,16 @@ class LogBot(irc.IRCClient):
                         'Log uploading to Fedora failed!', exc_info=True
                     )
         
-        elif msg == 'help':
+        elif msg == '.help':
             for command, help_txt in commands.iteritems():
                 self.say(
-                    user,
+                    user.nick,
                     help_template.format(
                         command=command, help_text=help_txt
                     )
                 )      
 
-        elif msg.split()[0] == '.link':
+        elif msg.startswith('.link'):
             self.links_for_key(msg)
 
     def action(self, hostmask, channel, msg):
