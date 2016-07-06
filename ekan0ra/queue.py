@@ -1,4 +1,13 @@
 class QuestionQueue(list):
+    """
+    A basic FIFO queue implementation.
+    Extension of the `list` datatype
+    
+    Head is at index 0
+    Tail is at index -1
+
+    New items come in a the TAIL and go out (popped) at the HEAD.
+    """
 
     def enqueue(self, nick):
         """Add nick to queue."""
@@ -6,26 +15,29 @@ class QuestionQueue(list):
 
     def dequeue(self, nick):
         """
-        Go from tail to head and remove first matching nick in queue.
+        Remove first item matching `nick` in queue.
         """
-        for i in range(-1, -len(self)-1, -1):
-            if (self[i] == nick):
-                del self[i]
-                break
+        try:
+            self.remove(nick)
+        except ValueError:
+            pass
 
     def has_next(self):
         """Check if queue has at least one item."""
         return len(self) > 0
 
     def peek_next(self):
-        """Get next item on queue, but don't remove from queue."""
+        """
+        Get a look at the next item to be popped from the queue,
+        but don't remove it from queue.
+        """
         if self.has_next():
             return self[0]
         else:
             return None
 
     def pop_next(self):
-        """Get next item on queue,and also remove same from queue."""
+        """Get next queue item from the head."""
         if self.has_next():
             return self.pop(0)
         else:
@@ -33,6 +45,6 @@ class QuestionQueue(list):
 
     def clear(self):
         """Clear all items from queue."""
-        self.__delslice__(0, len(self))
+        del self[:]
 
 
