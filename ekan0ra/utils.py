@@ -3,20 +3,15 @@
 """
 
 
-# Verifies the name format for a channel
-# Prepends it with a "#", if it doesn't
-# already start with one
-def verify_channel(channel):
-    if channel and not channel.startswith('#'):
-        channel = '#' + channel
+# Returns a properly formatted channel name
+# by making sure it begins with a '#'
+def validate_channel(channel):
+    assert type(channel) is str # defensive programming
+    channel = '#' + channel.lstrip('#')
 
     return channel
 
 
 # returns a list of valid link names
-def get_link_names(links_data):
-    links_list = []
-    for key, value in links_data.iteritems():
-        links_list.append(key)
-
-    return links_list
+# def get_link_names(links_data):
+#     return links_list.keys()

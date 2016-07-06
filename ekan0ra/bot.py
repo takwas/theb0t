@@ -409,7 +409,7 @@ class LogBot(irc.IRCClient):
                 'No keyword argument provided for `.link` command',
                 exc_info=True)
             self.say(
-                self.channel, '.link needs a keyword as argument. Check help for details.'
+                self.channel, '.link needs a keyword as argument. Check .help for details.'
             )
             return
 
