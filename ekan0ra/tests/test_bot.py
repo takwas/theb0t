@@ -59,21 +59,45 @@ class BotCommandsTest(unittest.TestCase):
 
     @mock.patch('ekan0ra.bot.irc.IRCClient')
     @mock.patch.object(LogBot, 'describe', auto_spec=True) # Fake links data load
-    def test_question_queue(self, mock_describe, mock_irc_IRCClient):
-        self.assertListEqual([], self.bot.qs_queue)
-        hostmask = self.validhostmasks[0]
-        self.bot.privmsg(hostmask, self.bot.channel, '!')
-        assert(mock_describe.called)
-        self.assertIn(IRCUser(self.bot, hostmask).nick, self.bot.qs_queue)
-        self.bot.privmsg(hostmask, self.bot.channel, '!!')
-        assert(mock_describe.called)
-        self.assertListEqual([], self.bot.qs_queue)
-        self.bot.privmsg(hostmask, self.bot.channel, '!')
-        assert(mock_describe.called)
-        self.assertIn(IRCUser(self.bot, hostmask).nick, self.bot.qs_queue)
-        self.bot.privmsg(hostmask, self.bot.channel, '!-')
-        assert(mock_describe.called)
-        self.assertListEqual([], self.bot.qs_queue)
+    def test_join_question_queue(self, mock_describe, mock_irc_IRCClient):
+        self.assertListEqual([], self.bot.qs_queue) # Ensure queue is empty
+        
+        # Add users to queue
+        for hostmask in self.validhostmasks:
+            self.bot.privmsg(hostmask, self.bot.channel, '!')
+            assert(mock_describe.called)
+            self.assertIn(IRCUser(self.bot, hostmask).nick, self.bot.qs_queue)
+            self.assertEquals(IRCUser(self.bot, hostmask).nick, self.bot.qs_queue[-1])
+
+    @mock.patch('ekan0ra.bot.irc.IRCClient')
+    @mock.patch.object(LogBot, 'describe', auto_spec=True) # Fake links data load
+    def test_leave_question_queue(self, mock_describe, mock_irc_IRCClient):
+        self.assertListEqual([], self.bot.qs_queue) # Ensure queue is empty
+        
+        leave_queue_commands = ('!!', '!-')
+        
+        for command in leave_queue_commands:        
+            # First, join queue
+            hostmask = self.validhostmasks[0]
+            self.bot.privmsg(hostmask, self.bot.channel, '!')
+            assert(mock_describe.called)
+            self.assertIn(IRCUser(self.bot, hostmask).nick, self.bot.qs_queue)
+            self.assertEquals(IRCUser(self.bot, hostmask).nick, self.bot.qs_queue[-1])
+
+            # Then, leave queue
+            # Only one user in queue, it should be empty afterwards
+            self.bot.privmsg(hostmask, self.bot.channel, command)
+            assert(mock_describe.called)
+            self.assertListEqual([], self.bot.qs_queue)
+
+        # self.bot.privmsg(hostmask, self.bot.channel, '!')
+        # assert(mock_describe.called)
+        # self.assertIn(IRCUser(self.bot, hostmask).nick, self.bot.qs_queue)
+        # self.bot.privmsg(hostmask, self.bot.channel, '!-')
+        # assert(mock_describe.called)
+        # self.assertListEqual([], self.bot.qs_queue)
+        # self.assertNotEquals(IRCUser(self.bot, hostmask).nick, self.bot.qs_queue[-1])
+
 
 
     # def test_hostmask_parsing(self):

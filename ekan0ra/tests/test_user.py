@@ -52,12 +52,12 @@ class UserTest(unittest.TestCase):
         self.assertEquals(list(config.ADMINS), self.bot.channel_admins_list)
 
     def test_not_admin_by_default(self):
-        nick = random.choice(self.validhostmasks)
-        self.user = IRCUser(self.bot, nick)
+        hostmask = random.choice(self.validhostmasks)
+        self.user = IRCUser(self.bot, hostmask)
         self.assertIsInstance(self.user, IRCUser)
         # New user should not be an admin by default
         # unless listed as a default admin in config
-        if nick not in config.ADMINS:
+        if self.user.nick not in config.ADMINS:
             self.assertFalse(self.user.is_admin())
             self.bot.channel_admins_list.append(self.user.nick)
             self.assertTrue(self.user.is_admin())
