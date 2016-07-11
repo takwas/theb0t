@@ -73,7 +73,6 @@ class BotCommandsTest(unittest.TestCase):
             self.assertIn(IRCUser(self.bot, hostmask).nick, self.bot.qs_queue)
             self.assertEquals(IRCUser(self.bot, hostmask).nick, self.bot.qs_queue[-1])
 
-    
     @mock.patch.object(LogBot, 'describe', auto_spec=True) # Fake links data load
     @mock.patch('ekan0ra.bot.irc.IRCClient')
     def test_leave_question_queue_command(self, mock_irc_IRCClient,
@@ -100,14 +99,6 @@ class BotCommandsTest(unittest.TestCase):
             assert(mock_describe.called)
             self.assertListEqual([], self.bot.qs_queue)
 
-        # self.bot.privmsg(hostmask, self.bot.channel, '!')
-        # assert(mock_describe.called)
-        # self.assertIn(IRCUser(self.bot, hostmask).nick, self.bot.qs_queue)
-        # self.bot.privmsg(hostmask, self.bot.channel, '!-')
-        # assert(mock_describe.called)
-        # self.assertListEqual([], self.bot.qs_queue)
-        # self.assertNotEquals(IRCUser(self.bot, hostmask).nick, self.bot.qs_queue[-1])
-
     @mock.patch('ekan0ra.bot.sys')
     @mock.patch('ekan0ra.bot.fpaste')
     @mock.patch('ekan0ra.bot.irc.IRCClient')
@@ -124,7 +115,6 @@ class BotCommandsTest(unittest.TestCase):
         self.assertEquals(self.bot.last_log_filename, mock_sys.argv[1])
         self.assertTrue(mock_fpaste.main.called)
 
-
     @mock.patch.object(LogBot, 'say', auto_spec=True)
     @mock.patch('ekan0ra.bot.irc.IRCClient')
     def test_help_command(self, mock_irc_IRCClient, mock_say):
@@ -134,29 +124,6 @@ class BotCommandsTest(unittest.TestCase):
 
         self.bot.privmsg(hostmask, self.bot.channel, command)
         self.assertTrue(mock_say.called)
-
-    # def test_hostmask_parsing(self):
-    #     for hostmask in self.invalidhostmasks:
-    #         self.assertRaises(InvalidUserError, IRCUser, self.bot, hostmask)
-    #     for hostmask in self.validhostmasks:
-    #         self.assertIsInstance(IRCUser(self.bot, hostmask), IRCUser, msg='Could not parse: %s' %hostmask)
-
-    # def test_default_admins_works(self):
-    #     self.assertEquals(list(config.ADMINS), self.bot.channel_admins_list)
-
-    # def test_not_admin_by_default(self):
-    #     nick = random.choice(self.validhostmasks)
-    #     self.user = IRCUser(self.bot, nick)
-    #     self.assertIsInstance(self.user, IRCUser)
-    #     # New user should not be an admin by default
-    #     # unless listed as a default admin in config
-    #     if nick not in config.ADMINS:
-    #         self.assertFalse(self.user.is_admin())
-    #         self.bot.channel_admins_list.append(self.user.nick)
-    #         self.assertTrue(self.user.is_admin())
-    #     else:
-    #         self.assertTrue(self.user.is_admin())
-
         
 
     # def tearDown(self):

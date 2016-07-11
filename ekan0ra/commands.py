@@ -1,5 +1,13 @@
+# -*- coding: utf-8 -*-
 """
-    Commands recognisable by our bot.
+    ekan0ra.commands
+    ~~~~~~~~~~~~~~~~
+
+    This module holds a dict that maps bot commands to their
+    descriptions.
+
+    :copyright: 
+    :license:
 """
 
 

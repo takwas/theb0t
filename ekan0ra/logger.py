@@ -1,8 +1,23 @@
+# -*- coding: utf-8 -*-
+"""
+    ekan0ra.logger
+    ~~~~~~~~~~~~~~
 
+    This module implements a logger for IRC class sessions and a factory
+    function to go with it.
+
+    :copyright: 
+    :license:
+"""
 # standard library imports
-import time, sys
-from datetime import datetime
 import logging
+import time
+from datetime import datetime
+from logging.handlers import TimedRotatingFileHandler
+
+# local imports
+from . import APP_LOGGER
+
 
 class MessageLogger(object):
     """
@@ -13,35 +28,57 @@ class MessageLogger(object):
         self.logger = None
         self.filename = None
 
-    def create_new_log(self, filename=None, format_str=None):
-        self.logger = logging.getLogger('classLogger_{}'.format(datetime.now().strftime("%Y-%m-%d-%H-%M")))
-        self.filename = filename or 'Logs-{}.txt'.format(
-            datetime.now().strftime("%Y-%m-%d-%H-%M")
-        )
-        #self.filename = self.bot.config.LOG_FILENAME_PREFIX.format(timestamp)
-        file_handler = logging.FileHandler(self.filename)
-        file_handler.setLevel('INFO')
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel('ERROR')
+    def create_new_log(self,
+            filename=None,
+            format_str='[%(asctime)15s]: %(message)s',
+            date_fmt='[%H:%M:%S]',
+            when='midnight',
+            interval=1,
+            backupCount=10):
+        assert when in ('S', 'M', 'H', 'D', 'W0', 'W6', 'midnight',)
+        assert interval > 0
+        assert backupCount > 0
 
-        log_formatter = logging.Formatter(format_str or '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        #log_formatter = logging.Formatter(self.bot.config.LOGGER_FORMAT)
-        #file_handler.setFormatter(log_formatter)
+        self.logger = logging.getLogger('classLogger')
+        self.filename = filename or 'Logs-{}.txt'.format(
+            datetime.now().strftime('%Y-%m-%d-%H-%M'))
+
+        log_formatter = logging.Formatter(
+            fmt=format_str, datefmt=date_fmt)
+
+        file_handler = TimedRotatingFileHandler(
+            self.filename,
+            when=when,
+            interval=interval,
+            backupCount=backupCount)
+        file_handler.setLevel('INFO')
+        file_handler.setFormatter(log_formatter)
+
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel('ERROR')
         console_handler.setFormatter(log_formatter)
+        
         self.logger.addHandler(file_handler)
         self.logger.addHandler(console_handler)
         self.logger.setLevel('INFO')
 
     def log(self, message):
         """Log `message` to a log file."""
-        timestamp = time.strftime("%H:%M:%S", time.localtime(time.time()))
-        log_msg =  ''.join(['[', timestamp, '] ', message])
-        self.logger.info(log_msg)
+        # timestamp = time.strftime(config.CLASS_LOG_DATE_FORMAT_STR,
+        #     time.localtime(time.time()))
+        # log_msg =  ''.join(['[', timestamp, '] ', message])
+        self.logger.info(message)
 
     def close(self):
-        logging.shutdown()
-
+        if self.logger is not None:
+            for handler in self.logger.handlers:
+                if isinstance(handler, TimedRotatingFileHandler):
+                    handler.doRollOver()   
+                handler.flush()
+                handler.close()
+            del self.logger.handlers[:]
 
 # Get logger instance
 def get_logger_instance():
+    """Return an instance of `MessageLogger`."""
     return MessageLogger()

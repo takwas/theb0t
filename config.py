@@ -1,63 +1,145 @@
 """Configuration for the bot."""
-
+# standard library imports
 import os
 
-# template string for building string 
+# Template string for building string 
 # representations for config classes
 running_mode = 'App running in {mode} mode. With configs:\n{configs}'
 
-def get_admins(default_admins):
-    admins = os.getenv('LOGBOT_ADMINS', None)
-    if admins is not None:
-        admins = admins.split()
-    else:
-        admins = default_admins
-    return admins
 
-
-# Base configuration class that
-# will be extended
+# Base configuration class that will be extended
 class Config(object):
+
+    # Directory to store application data like logs, links...
     DATA_DIR = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'data')
+        os.path.abspath(os.path.dirname(__file__)), 'data')  
 
-    APP_LOG_DIR = os.path.join(DATA_DIR, 'app_logs')
-    APP_LOGGER_NAME = 'application_log.log'
+    # Main application log config
 
-    CLASS_LOG_DIR = os.path.join(DATA_DIR, 'class_logs')
-    LOG_FILENAME = 'Logs-{}.txt'
-    CLASS_LOGGER_FORMAT = \
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    LOG_PREFIX = '[{}]'
+    APP_LOG_DIR = os.path.join(DATA_DIR,
+        'app_logs')  # directory to store application logs
+    APP_LOG_FILENAME = 'application_log.log'
+    APP_LOG_FORMAT_STR = \
+        '\n%(asctime)s - %(name)s - %(levelname)6s: %(message)s'
+    
+    # App log file rotation scheduling
+    
+    APP_LOG_ROTATION_TIME = 'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    APP_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
+    APP_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
 
+    # Class session log config
+    
+    CLASS_LOG_DIR = os.path.join(DATA_DIR,
+        'class_logs')  # directory to store application logs
+    CLASS_LOG_FILENAME_FORMAT_STR = 'Logs-{}.txt'
+    CLASS_LOG_FORMAT_STR = '%(asctime)s %(message)s'
+    CLASS_LOG_DATE_FORMAT_STR = '[%H:%M:%S]'
+    CLASS_LOG_NICK_PADDING = 16
+    
+    # Class log file rotation scheduling
+
+    CLASS_LOG_ROTATION_TIME = \
+        'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    CLASS_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
+    CLASS_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
+
+    # File that contains URLs
     LINKS_FILE = os.path.join(DATA_DIR, 'links.json')
+
+    # Other config data
 
     SESSION_START_MSG = '----------SESSION STARTS----------'
     SESSION_END_MSG = '----------SESSION ENDS----------'
-
     BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/"
+    IRC_SERVER = 'irc.freenode.net'
+    IRC_SERVER_PORT = 6667
+
+    # Enabled/disabled commands or features
+
+    SHOW_QUEUE_STATUS_ENABLED = False
+    LEAVE_QUEUE_ENABLED = True
+    GIVEMELOGS_ENABLED = True
+    LINKS_ENABLED = True
+    PINGALL_ENABLED = True
 
 
 # Configuration used during
 # the development of our bot
 class DevConfig(Config):
 
-    #DATA_DIR = '' # Override application data storage directory
-    #APP_LOG_DIR = '' # Override application logs storage directory
-    #APP_LOGGER_NAME = '' # Override application logger name 
-    #CLASS_LOG_DIR = '' # Override class logs storage directory
-    #LOG_FILENAME = '' # Override log filename
-    #CLASS_LOGGER_FORMAT = '' # Override format_str for class logger
-    #LOG_PREFIX = '' # Override prefix format_str for class logger
-    #LINKS_FILE = '' # Override links file
-    #SESSION_START_MSG = '' # Override session start message
-    #SESSION_END_MSG = '' # Override session end message
-    #BASE_TOPIC = '' # Override channel default topic
+    ######################
+    # COMPULSORY CONFIGS #
+    ######################
+    # You must set bot's attributes to get things running.
+    #
+    # Uncomment the following bot attributes and set
+    # desired values if you want to use this config class
+    
+    # Bot attributes
+
+    #BOTNICK = 'sawkateca'  # The IRC nick of the bot
+    # IRC channel to log; use appropriate channel
+    # prefix like '#';
+    # #test-my-bot is not a registered channel,
+    # but you can join it (effectively creating it,
+    # unless someone else has joined it) to test the bot
+    #CHANNEL = '#test-my-bot'
+    # List of IRC nicks of bot's admins/masters
+    #ADMINS = ('acetakwas', )
 
 
-    BOTNICK = os.getenv('LOGBOT_NICK', 'sawkateca')
-    CHANNEL = os.getenv('LOGBOT_CHANNEL', '#test-my-bot') # #test-my-bot is not a registered channel.
-    ADMINS = get_admins(('acetakwas', ))
+    ####################
+    # OPTIONAL CONFIGS #
+    ####################
+    # You may optionally override any of these configs:
+    
+    # Main application log config
+
+    #APP_LOG_DIR = os.path.join(DATA_DIR,
+    #     'app_logs')  # directory to store application logs
+    #APP_LOG_FILENAME = 'application_log.log'
+    #APP_LOG_FORMAT_STR = \
+    #     '\n%(asctime)s - %(name)s - %(levelname)6s: %(message)s'
+    
+    # App log file rotation scheduling
+    
+    #APP_LOG_ROTATION_TIME = 'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    #APP_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
+    #APP_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
+
+    # Class session log config
+
+    #CLASS_LOG_DIR = os.path.join(DATA_DIR,
+    #     'class_logs')  # directory to store application logs
+    #CLASS_LOG_FILENAME_FORMAT_STR = 'Logs-{}.txt'
+    #CLASS_LOG_FORMAT_STR = '%(asctime)s %(message)s'
+    #CLASS_LOG_DATE_FORMAT_STR = '[%H:%M:%S]'
+    #CLASS_LOG_NICK_PADDING = 16
+    
+    # Class log file rotation scheduling
+    
+    #CLASS_LOG_ROTATION_TIME = \
+    #     'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    #CLASS_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
+    #CLASS_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
+
+    # File that contains URLs
+    #LINKS_FILE = os.path.join(DATA_DIR, 'links.json')
+
+    # Other config data
+    #SESSION_START_MSG = '----------SESSION STARTS----------'
+    #SESSION_END_MSG = '----------SESSION ENDS----------'
+    #BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/"
+    #IRC_SERVER = 'irc.freenode.net'
+    #IRC_SERVER_PORT = 6667
+
+    # Enabled/disabled commands or features
+    #SHOW_QUEUE_STATUS_ENABLED = False
+    #LEAVE_QUEUE_ENABLED = True
+    #GIVEMELOGS_ENABLED = True
+    #LINKS_ENABLED = True
+    #PINGALL_ENABLED = True
 
     def __repr__(self):
         data = self.__class__.__dict__.copy()
@@ -72,22 +154,76 @@ class DevConfig(Config):
 # of our bot
 class TestConfig(Config):
 
-    #DATA_DIR = '' # Override application data storage directory
-    #APP_LOG_DIR = '' # Override application logs storage directory
-    #APP_LOGGER_NAME = '' # Override application logger name 
-    #CLASS_LOG_DIR = '' # Override class logs storage directory
-    #LOG_FILENAME = '' # Override log filename
-    #CLASS_LOGGER_FORMAT = '' # Override format_str for class logger
-    #LOG_PREFIX = '' # Override prefix format_str for class logger
-    #LINKS_FILE = '' # Override links file
-    #SESSION_START_MSG = '' # Override session start message
-    #SESSION_END_MSG = '' # Override session end message
-    #BASE_TOPIC = '' # Override channel default topic
+    ######################
+    # COMPULSORY CONFIGS #
+    ######################
+    # You must set bot's attributes to get things running.
+    #
+    # Uncomment the following bot attributes and set
+    # desired values if you want to use this config class
+    
+    # Bot attributes
+
+    #BOTNICK = 'sawkat'  # The IRC nick of the bot
+    # IRC channel to log; use appropriate channel
+    # prefix like '#'; #botters-test is a standard
+    # IRC bot testing channel
+    #CHANNEL = '#botters-test'
+    # List of IRC nicks of bot's admins/masters 
+    #ADMINS = ('acetakwas', )
 
 
-    BOTNICK = os.getenv('LOGBOT_NICK', 'sawkat')
-    CHANNEL = os.getenv('LOGBOT_CHANNEL', '#botters-test')
-    ADMINS = get_admins(('acetakwas', ))
+    ####################
+    # OPTIONAL CONFIGS #
+    ####################
+    # You may optionally override any of these configs:
+
+    # Main application log config
+
+    #APP_LOG_DIR = os.path.join(DATA_DIR,
+    #     'app_logs')  # directory to store application logs
+    #APP_LOG_FILENAME = 'application_log.log'
+    #APP_LOG_FORMAT_STR = \
+    #     '\n%(asctime)s - %(name)s - %(levelname)6s: %(message)s'
+    
+    # App log file rotation scheduling
+    
+    #APP_LOG_ROTATION_TIME = 'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    #APP_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
+    #APP_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
+
+    # Class session log config
+
+    #CLASS_LOG_DIR = os.path.join(DATA_DIR,
+    #     'class_logs')  # directory to store application logs
+    #CLASS_LOG_FILENAME_FORMAT_STR = 'Logs-{}.txt'
+    #CLASS_LOG_FORMAT_STR = '%(asctime)s %(message)s'
+    #CLASS_LOG_DATE_FORMAT_STR = '[%H:%M:%S]'
+    #CLASS_LOG_NICK_PADDING = 16
+    
+    # Class log file rotation scheduling
+    
+    #CLASS_LOG_ROTATION_TIME = \
+    #     'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    #CLASS_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
+    #CLASS_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
+
+    # File that contains URLs
+    #LINKS_FILE = os.path.join(DATA_DIR, 'links.json')
+
+    # Other config data
+    #SESSION_START_MSG = '----------SESSION STARTS----------'
+    #SESSION_END_MSG = '----------SESSION ENDS----------'
+    #BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/"
+    #IRC_SERVER = 'irc.freenode.net'
+    #IRC_SERVER_PORT = 6667
+
+    # Enabled/disabled commands or features
+    #SHOW_QUEUE_STATUS_ENABLED = False
+    #LEAVE_QUEUE_ENABLED = True
+    #GIVEMELOGS_ENABLED = True
+    #LINKS_ENABLED = True
+    #PINGALL_ENABLED = True
 
     def __repr__(self):
         data = self.__class__.__dict__.copy()
@@ -101,22 +237,80 @@ class TestConfig(Config):
 # Main configuration for when our bot is deployed on a server
 class DeployConfig(Config):
 
-    #DATA_DIR = '' # Override application data storage directory
-    #APP_LOG_DIR = '' # Override application logs storage directory
-    #APP_LOGGER_NAME = '' # Override application logger name 
-    #CLASS_LOG_DIR = '' # Override class logs storage directory
-    #LOG_FILENAME = '' # Override log filename
-    #CLASS_LOGGER_FORMAT = '' # Override format_str for class logger
-    #LOG_PREFIX = '' # Override prefix format_str for class logger
-    #LINKS_FILE = '' # Override links file
-    #SESSION_START_MSG = '' # Override session start message
-    #SESSION_END_MSG = '' # Override session end message
-    #BASE_TOPIC = '' # Override channel default topic
+    ######################
+    # COMPULSORY CONFIGS #
+    ######################
+    # You must set bot's attributes to get things running.
+    #
+    # Uncomment the following bot attributes and set
+    # desired values if you want to use this config class
+    
+    # Bot attributes
 
+    #BOTNICK = 'batul'   # The IRC nick of the bot
+    # IRC channel to log; use appropriate channel
+    # prefix like '#'
+    #CHANNEL = '#dgplug'  
+    # List of IRC nicks of bot's admins/masters
+    #ADMINS = ('kushal',
+    #        'sayan',
+    #        'mbuf',
+    #        'rtnpro',
+    #        'chandankumar',
+    #        'praveenkumar',)  
 
-    BOTNICK = os.getenv('LOGBOT_NICK', 'batul') # The nick of the bot.
-    CHANNEL = os.getenv('LOGBOT_CHANNEL', '#dgplug')
-    ADMINS = get_admins(('kushal','sayan','mbuf','rtnpro','chandankumar','praveenkumar', )) # List of IRC nicks as masters.
+    
+    ####################
+    # OPTIONAL CONFIGS #
+    ####################
+    # You may optionally override any of these configs:
+
+    # Main application log config
+
+    #APP_LOG_DIR = os.path.join(DATA_DIR,
+    #     'app_logs')  # directory to store application logs
+    #APP_LOG_FILENAME = 'application_log.log'
+    #APP_LOG_FORMAT_STR = \
+    #     '\n%(asctime)s - %(name)s - %(levelname)6s: %(message)s'
+    
+    # App log file rotation scheduling
+    
+    #APP_LOG_ROTATION_TIME = 'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    #APP_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
+    #APP_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
+
+    # Class session log config
+
+    #CLASS_LOG_DIR = os.path.join(DATA_DIR,
+    #     'class_logs')  # directory to store application logs
+    #CLASS_LOG_FILENAME_FORMAT_STR = 'Logs-{}.txt'
+    #CLASS_LOG_FORMAT_STR = '%(asctime)s %(message)s'
+    #CLASS_LOG_DATE_FORMAT_STR = '[%H:%M:%S]'
+    #CLASS_LOG_NICK_PADDING = 16
+    
+    # Class log file rotation scheduling
+    
+    #CLASS_LOG_ROTATION_TIME = \
+    #     'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    #CLASS_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
+    #CLASS_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
+
+    # File that contains URLs
+    #LINKS_FILE = os.path.join(DATA_DIR, 'links.json')
+
+    # Other config data
+    #SESSION_START_MSG = '----------SESSION STARTS----------'
+    #SESSION_END_MSG = '----------SESSION ENDS----------'
+    #BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/"
+    #IRC_SERVER = 'irc.freenode.net'
+    #IRC_SERVER_PORT = 6667
+
+    # Enabled/disabled commands or features
+    #SHOW_QUEUE_STATUS_ENABLED = False
+    #LEAVE_QUEUE_ENABLED = True
+    #GIVEMELOGS_ENABLED = True
+    #LINKS_ENABLED = True
+    #PINGALL_ENABLED = True
 
     def __repr__(self):
         data = self.__class__.__dict__.copy()

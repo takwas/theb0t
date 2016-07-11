@@ -1,12 +1,27 @@
-class QuestionQueue(list):
-    """
-    A basic FIFO queue implementation.
-    Extension of the `list` datatype
-    
-    Head is at index 0
-    Tail is at index -1
+# -*- coding: utf-8 -*-
+"""
+    ekan0ra.queue
+    ~~~~~~~~~~~~~
 
-    New items come in a the TAIL and go out (popped) at the HEAD.
+    A basic implementation of a generic use-case queue. It's called
+    QuestionQueue because within this package, it is used to track IRC
+    users who either indicate that they have questions to ask or no
+    longer have questions to ask.
+
+    :copyright: 
+    :license:
+"""
+
+
+class QuestionQueue(list):
+    """A basic FIFO queue implementation.
+
+    This is implemented as an extension of the `list` datatype.
+    
+    New items come in at the TAIL and go out (popped) at the HEAD.
+
+        Head is at index 0
+        Tail is at index -1
     """
 
     def enqueue(self, nick):
@@ -19,8 +34,9 @@ class QuestionQueue(list):
         """
         try:
             self.remove(nick)
+            return True
         except ValueError:
-            pass
+            return False
 
     def has_next(self):
         """Check if queue has at least one item."""
