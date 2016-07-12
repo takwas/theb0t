@@ -52,7 +52,7 @@ class Config(object):
 
     # Other config data
 
-    SESSION_START_MSG = '----------SESSION STARTS----------\nRoll Call...'
+    SESSION_START_MSG = '----------SESSION STARTS----------'
     SESSION_END_MSG = '----------SESSION ENDS----------'
     BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/"
     IRC_SERVER = 'irc.freenode.net'

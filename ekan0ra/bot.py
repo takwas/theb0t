@@ -59,8 +59,7 @@ class LogBot(irc.IRCClient):
         self.nickname = config.BOTNICK
         self.channel = config.CHANNEL
         self.channel_admins_list = list(config.ADMINS) # IRC users who can control this bot
-        self.qs_queue = Queue()
-        #self.                                 
+        self.qs_queue = Queue()       
         self.load_links()
         self.logger = get_logger_instance()
         self.last_log_filename = self.logger.filename
@@ -273,9 +272,10 @@ class LogBot(irc.IRCClient):
                             )
                             self.say(
                                 self.channel, self.config.SESSION_START_MSG
-                            )
+                            ) 
                             if topic is not None:
                                 self.say(self.channel, 'TOPIC: %s' % topic)
+                            self.say(self.channel, 'Roll Call...')
                             self.log_issuer = user.nick
                         else:
                             self.say(user.nick, 'Logging failed to start!')
