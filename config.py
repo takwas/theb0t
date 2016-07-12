@@ -135,7 +135,7 @@ class DevConfig(Config):
 
     # Other config data
 
-    #SESSION_START_MSG = '----------SESSION STARTS----------\nRoll Call...'
+    #SESSION_START_MSG = '----------SESSION STARTS----------'
     #SESSION_END_MSG = '----------SESSION ENDS----------'
     #BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/"
     #IRC_SERVER = 'irc.freenode.net'
@@ -223,7 +223,7 @@ class TestConfig(Config):
 
     # Other config data
 
-    #SESSION_START_MSG = '----------SESSION STARTS----------\nRoll Call...'
+    #SESSION_START_MSG = '----------SESSION STARTS----------'
     #SESSION_END_MSG = '----------SESSION ENDS----------'
     #BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/"
     #IRC_SERVER = 'irc.freenode.net'
@@ -279,54 +279,54 @@ class DeployConfig(Config):
     # Main application log config
 
     # directory to store application logs
-    #APP_LOG_DIR = os.path.join(DATA_DIR, 'app_logs')
-    #APP_LOG_FILENAME = 'application_log.log'
-    #APP_LOG_FORMAT_STR = \
-    #     '\n%(asctime)s - %(name)s - %(levelname)6s: %(message)s'
+    APP_LOG_DIR = os.path.join(DATA_DIR, 'app_logs')
+    APP_LOG_FILENAME = 'application_log.log'
+    APP_LOG_FORMAT_STR = \
+         '\n%(asctime)s - %(name)s - %(levelname)6s: %(message)s'
     
     # App log file rotation scheduling
     
     # Valid values for rotation time:
     #     'S','M','H','D','W0'-'W6','midnight'
-    #APP_LOG_ROTATION_TIME = 'midnight'
-    #APP_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
-    #APP_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
+    APP_LOG_ROTATION_TIME = 'H'
+    APP_LOG_ROTATION_INTERVAL = 72  # Don't set to less than 1
+    APP_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
 
     # Class session log config
 
     # directory to store class session logs
-    #CLASS_LOG_DIR = os.path.join(DATA_DIR, 'class_logs')
-    #CLASS_LOG_FILENAME_FORMAT_STR = 'Logs-{}.txt'
-    #CLASS_LOG_FORMAT_STR = '%(asctime)s %(message)s'
-    #CLASS_LOG_DATE_FORMAT_STR = '[%H:%M:%S]'
-    #CLASS_LOG_NICK_PADDING = 16
+    CLASS_LOG_DIR = os.path.join(DATA_DIR, 'class_logs')
+    CLASS_LOG_FILENAME_FORMAT_STR = 'Logs-{}.txt'
+    CLASS_LOG_FORMAT_STR = '%(asctime)s %(message)s'
+    CLASS_LOG_DATE_FORMAT_STR = '[%H:%M:%S]'
+    CLASS_LOG_NICK_PADDING = 16
     
     # Class log file rotation scheduling
     
     # Valid values for rotation time:
     #     'S','M','H','D','W0'-'W6','midnight'
-    #CLASS_LOG_ROTATION_TIME = 'midnight'
-    #CLASS_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
-    #CLASS_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
+    CLASS_LOG_ROTATION_TIME = 'midnight'
+    CLASS_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
+    CLASS_LOG_BACKUP_COUNT = 21  # Don't set to less than 1
 
     # File that contains URLs
-    #LINKS_FILE = os.path.join(DATA_DIR, 'links.json')
+    LINKS_FILE = os.path.join(DATA_DIR, 'links.json')
 
     # Other config data
 
-    #SESSION_START_MSG = '----------SESSION STARTS----------\nRoll Call...'
-    #SESSION_END_MSG = '----------SESSION ENDS----------'
-    #BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/"
-    #IRC_SERVER = 'irc.freenode.net'
-    #IRC_SERVER_PORT = 6667
+    SESSION_START_MSG = '----------SESSION STARTS----------'
+    SESSION_END_MSG = '----------SESSION ENDS----------'
+    BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/"
+    IRC_SERVER = 'irc.freenode.net'
+    IRC_SERVER_PORT = 6667
 
     # Enabled/disabled commands or features
 
-    #SHOW_QUEUE_STATUS_ENABLED = False
-    #LEAVE_QUEUE_ENABLED = True
-    #GIVEMELOGS_ENABLED = True
-    #LINKS_ENABLED = True
-    #PINGALL_ENABLED = True
+    SHOW_QUEUE_STATUS_ENABLED = False
+    LEAVE_QUEUE_ENABLED = True
+    GIVEMELOGS_ENABLED = True
+    LINKS_ENABLED = True
+    PINGALL_ENABLED = True
 
     def __repr__(self):
         data = self.__class__.__dict__.copy()
