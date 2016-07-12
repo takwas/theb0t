@@ -10,14 +10,13 @@ import mock
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 # local imports
-from ekan0ra.queue import QuestionQueue
+from ekan0ra.queue import Queue
 
 
 class QueueTest(unittest.TestCase):
 
-    @mock.patch('ekan0ra.bot.create_app_logger') # Fake creation of app logger
-    def setUp(self, mock_create_app_logger):
-        self.qq = QuestionQueue()
+    def setUp(self):
+        self.qq = Queue()
         self.assertListEqual([], self.qq) # Ensure queue is initially empty
     
     def test_enqueue(self):

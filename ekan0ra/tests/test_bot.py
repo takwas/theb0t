@@ -94,21 +94,21 @@ class BotCommandsTest(unittest.TestCase):
             assert(mock_describe.called)
             self.assertListEqual([], self.bot.qs_queue)
 
-    @mock.patch('ekan0ra.bot.sys')
-    @mock.patch('ekan0ra.bot.fpaste')
-    @mock.patch('ekan0ra.bot.irc.IRCClient')
-    def test_givemelogs_command(self, mock_irc_IRCClient,
-            mock_fpaste, mock_sys):
-        command = '.givemelogs'
-        self.assertIn(command, commands.keys())
-        hostmask = self.validhostmasks[0]
+    # @mock.patch('ekan0ra.bot.sys')
+    # @mock.patch('ekan0ra.bot.fpaste')
+    # @mock.patch('ekan0ra.bot.irc.IRCClient')
+    # def test_givemelogs_command(self, mock_irc_IRCClient,
+    #         mock_fpaste, mock_sys):
+    #     command = '.givemelogs'
+    #     self.assertIn(command, commands.keys())
+    #     hostmask = self.validhostmasks[0]
         
-        self.bot.last_log_filename = True # fake value for last_log_filename attribute
-        self.bot.privmsg(hostmask, self.bot.channel, command)
-        self.assertEquals(2, len(mock_sys.argv))
-        self.assertIn('fpaste', mock_sys.argv)
-        self.assertEquals(self.bot.last_log_filename, mock_sys.argv[1])
-        self.assertTrue(mock_fpaste.main.called)
+    #     self.bot.last_log_filename = True # fake value for last_log_filename attribute
+    #     self.bot.privmsg(hostmask, self.bot.channel, command)
+    #     self.assertEquals(2, len(mock_sys.argv))
+    #     self.assertIn('fpaste', mock_sys.argv)
+    #     self.assertEquals(self.bot.last_log_filename, mock_sys.argv[1])
+    #     self.assertTrue(mock_fpaste.main.called)
 
     @mock.patch.object(LogBot, 'say', auto_spec=True)
     @mock.patch('ekan0ra.bot.irc.IRCClient')

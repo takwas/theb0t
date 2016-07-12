@@ -40,7 +40,7 @@ class LoggerTest(unittest.TestCase):
         self.logger.log(fake_log_message)
         self.assertTrue(self.logger.logger.info.called)
 
-    def close(self):
+    #def close(self):
         
     def tearDown(self):
         logging.shutdown()

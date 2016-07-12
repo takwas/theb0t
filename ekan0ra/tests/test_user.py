@@ -20,8 +20,7 @@ config = config_modes.get('test')
 
 class UserTest(unittest.TestCase):
 
-    @mock.patch('ekan0ra.bot.create_app_logger') # Fake creation of app logger
-    def setUp(self, mock_create_app_logger):
+    def setUp(self):
         ####TODO: Add more valid hostmask patterns to test
         self.validhostmasks = [
             'sawkateca!~sawkateca@41.203.71.181',
@@ -35,12 +34,7 @@ class UserTest(unittest.TestCase):
             '~acetakwas@41.203.71.181'
         ]
 
-        self.assertFalse(
-            mock_create_app_logger.called,
-            'Create app logger was called too early')
         self.bot = LogBot(config)
-        mock_create_app_logger.assert_called_with(config)
-
 
     def test_hostmask_parsing(self):
         for hostmask in self.invalidhostmasks:

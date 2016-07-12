@@ -50,6 +50,7 @@ class LogBot(irc.IRCClient):
         logger: `MessageLogger` instance.
         last_log_filename: Keeps track of the filename of most recent
             class log.
+        fpaste_url: URL for pastebin of last class log
     """
 
     def  __init__(self, config):
