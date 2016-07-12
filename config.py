@@ -16,22 +16,24 @@ class Config(object):
 
     # Main application log config
 
-    APP_LOG_DIR = os.path.join(DATA_DIR,
-        'app_logs')  # directory to store application logs
+    # directory to store application logs
+    APP_LOG_DIR = os.path.join(DATA_DIR, 'app_logs')
     APP_LOG_FILENAME = 'application_log.log'
     APP_LOG_FORMAT_STR = \
         '\n%(asctime)s - %(name)s - %(levelname)6s: %(message)s'
     
     # App log file rotation scheduling
     
-    APP_LOG_ROTATION_TIME = 'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    # Valid values for rotation time:
+    #     'S','M','H','D','W0'-'W6','midnight'
+    APP_LOG_ROTATION_TIME = 'midnight'
     APP_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
     APP_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
 
     # Class session log config
     
-    CLASS_LOG_DIR = os.path.join(DATA_DIR,
-        'class_logs')  # directory to store application logs
+    # directory to store class session logs
+    CLASS_LOG_DIR = os.path.join(DATA_DIR, 'class_logs')
     CLASS_LOG_FILENAME_FORMAT_STR = 'Logs-{}.txt'
     CLASS_LOG_FORMAT_STR = '%(asctime)s %(message)s'
     CLASS_LOG_DATE_FORMAT_STR = '[%H:%M:%S]'
@@ -39,8 +41,9 @@ class Config(object):
     
     # Class log file rotation scheduling
 
-    CLASS_LOG_ROTATION_TIME = \
-        'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    # Valid values for rotation time:
+    #     'S','M','H','D','W0'-'W6','midnight'
+    CLASS_LOG_ROTATION_TIME = 'midnight'
     CLASS_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
     CLASS_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
 
@@ -57,7 +60,7 @@ class Config(object):
 
     # Enabled/disabled commands or features
 
-    SHOW_QUEUE_STATUS_ENABLED = False
+    SHOW_QUEUE_STATUS_ENABLED = True
     LEAVE_QUEUE_ENABLED = True
     GIVEMELOGS_ENABLED = True
     LINKS_ENABLED = True
@@ -78,15 +81,15 @@ class DevConfig(Config):
     
     # Bot attributes
 
-    #BOTNICK = 'sawkateca'  # The IRC nick of the bot
+    BOTNICK = 'sawkateca'  # The IRC nick of the bot
     # IRC channel to log; use appropriate channel
     # prefix like '#';
     # #test-my-bot is not a registered channel,
     # but you can join it (effectively creating it,
     # unless someone else has joined it) to test the bot
-    #CHANNEL = '#test-my-bot'
+    CHANNEL = '#test-my-bot'
     # List of IRC nicks of bot's admins/masters
-    #ADMINS = ('acetakwas', )
+    ADMINS = ('acetakwas', )
 
 
     ####################
@@ -96,22 +99,24 @@ class DevConfig(Config):
     
     # Main application log config
 
-    #APP_LOG_DIR = os.path.join(DATA_DIR,
-    #     'app_logs')  # directory to store application logs
+    # directory to store application logs
+    #APP_LOG_DIR = os.path.join(DATA_DIR, 'app_logs')
     #APP_LOG_FILENAME = 'application_log.log'
     #APP_LOG_FORMAT_STR = \
     #     '\n%(asctime)s - %(name)s - %(levelname)6s: %(message)s'
     
     # App log file rotation scheduling
     
-    #APP_LOG_ROTATION_TIME = 'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    # Valid values for rotation time:
+    #     'S','M','H','D','W0'-'W6','midnight'
+    APP_LOG_ROTATION_TIME = 'M'
     #APP_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
-    #APP_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
+    APP_LOG_BACKUP_COUNT = 4  # Don't set to less than 1
 
     # Class session log config
 
-    #CLASS_LOG_DIR = os.path.join(DATA_DIR,
-    #     'class_logs')  # directory to store application logs
+    # directory to store class session logs
+    #CLASS_LOG_DIR = os.path.join(DATA_DIR, 'class_logs')
     #CLASS_LOG_FILENAME_FORMAT_STR = 'Logs-{}.txt'
     #CLASS_LOG_FORMAT_STR = '%(asctime)s %(message)s'
     #CLASS_LOG_DATE_FORMAT_STR = '[%H:%M:%S]'
@@ -119,23 +124,26 @@ class DevConfig(Config):
     
     # Class log file rotation scheduling
     
-    #CLASS_LOG_ROTATION_TIME = \
-    #     'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    # Valid values for rotation time:
+    #     'S','M','H','D','W0'-'W6','midnight'
+    CLASS_LOG_ROTATION_TIME = 'M'
     #CLASS_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
-    #CLASS_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
+    CLASS_LOG_BACKUP_COUNT = 4  # Don't set to less than 1
 
     # File that contains URLs
     #LINKS_FILE = os.path.join(DATA_DIR, 'links.json')
 
     # Other config data
-    #SESSION_START_MSG = '----------SESSION STARTS----------'
+
+    #SESSION_START_MSG = '----------SESSION STARTS----------\nRoll Call...'
     #SESSION_END_MSG = '----------SESSION ENDS----------'
     #BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/"
     #IRC_SERVER = 'irc.freenode.net'
     #IRC_SERVER_PORT = 6667
 
     # Enabled/disabled commands or features
-    #SHOW_QUEUE_STATUS_ENABLED = False
+
+    SHOW_QUEUE_STATUS_ENABLED = True
     #LEAVE_QUEUE_ENABLED = True
     #GIVEMELOGS_ENABLED = True
     #LINKS_ENABLED = True
@@ -143,7 +151,6 @@ class DevConfig(Config):
 
     def __repr__(self):
         data = self.__class__.__dict__.copy()
-        #data['mode'] = 'development'
         data.pop('__doc__', None)
         data.pop('__repr__', None)
         data.pop('__module__', None)
@@ -180,22 +187,24 @@ class TestConfig(Config):
 
     # Main application log config
 
-    #APP_LOG_DIR = os.path.join(DATA_DIR,
-    #     'app_logs')  # directory to store application logs
+    # directory to store application logs
+    #APP_LOG_DIR = os.path.join(DATA_DIR, 'app_logs')
     #APP_LOG_FILENAME = 'application_log.log'
     #APP_LOG_FORMAT_STR = \
     #     '\n%(asctime)s - %(name)s - %(levelname)6s: %(message)s'
     
     # App log file rotation scheduling
     
-    #APP_LOG_ROTATION_TIME = 'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    # Valid values for rotation time:
+    #     'S','M','H','D','W0'-'W6','midnight'
+    #APP_LOG_ROTATION_TIME = 'midnight'
     #APP_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
     #APP_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
 
     # Class session log config
 
-    #CLASS_LOG_DIR = os.path.join(DATA_DIR,
-    #     'class_logs')  # directory to store application logs
+    # directory to store class session logs
+    #CLASS_LOG_DIR = os.path.join(DATA_DIR, 'class_logs')
     #CLASS_LOG_FILENAME_FORMAT_STR = 'Logs-{}.txt'
     #CLASS_LOG_FORMAT_STR = '%(asctime)s %(message)s'
     #CLASS_LOG_DATE_FORMAT_STR = '[%H:%M:%S]'
@@ -203,8 +212,9 @@ class TestConfig(Config):
     
     # Class log file rotation scheduling
     
-    #CLASS_LOG_ROTATION_TIME = \
-    #     'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    # Valid values for rotation time:
+    #     'S','M','H','D','W0'-'W6','midnight'
+    #CLASS_LOG_ROTATION_TIME = 'midnight'
     #CLASS_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
     #CLASS_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
 
@@ -212,13 +222,15 @@ class TestConfig(Config):
     #LINKS_FILE = os.path.join(DATA_DIR, 'links.json')
 
     # Other config data
-    #SESSION_START_MSG = '----------SESSION STARTS----------'
+
+    #SESSION_START_MSG = '----------SESSION STARTS----------\nRoll Call...'
     #SESSION_END_MSG = '----------SESSION ENDS----------'
     #BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/"
     #IRC_SERVER = 'irc.freenode.net'
     #IRC_SERVER_PORT = 6667
 
     # Enabled/disabled commands or features
+
     #SHOW_QUEUE_STATUS_ENABLED = False
     #LEAVE_QUEUE_ENABLED = True
     #GIVEMELOGS_ENABLED = True
@@ -227,7 +239,6 @@ class TestConfig(Config):
 
     def __repr__(self):
         data = self.__class__.__dict__.copy()
-        #data['mode'] = 'testing'
         data.pop('__doc__', None)
         data.pop('__repr__', None)
         data.pop('__module__', None)
@@ -247,17 +258,17 @@ class DeployConfig(Config):
     
     # Bot attributes
 
-    #BOTNICK = 'batul'   # The IRC nick of the bot
+    BOTNICK = 'batul'   # The IRC nick of the bot
     # IRC channel to log; use appropriate channel
     # prefix like '#'
-    #CHANNEL = '#dgplug'  
+    CHANNEL = '#dgplug'  
     # List of IRC nicks of bot's admins/masters
-    #ADMINS = ('kushal',
-    #        'sayan',
-    #        'mbuf',
-    #        'rtnpro',
-    #        'chandankumar',
-    #        'praveenkumar',)  
+    ADMINS = ('kushal',
+            'sayan',
+            'mbuf',
+            'rtnpro',
+            'chandankumar',
+            'praveenkumar',)  
 
     
     ####################
@@ -267,22 +278,24 @@ class DeployConfig(Config):
 
     # Main application log config
 
-    #APP_LOG_DIR = os.path.join(DATA_DIR,
-    #     'app_logs')  # directory to store application logs
+    # directory to store application logs
+    #APP_LOG_DIR = os.path.join(DATA_DIR, 'app_logs')
     #APP_LOG_FILENAME = 'application_log.log'
     #APP_LOG_FORMAT_STR = \
     #     '\n%(asctime)s - %(name)s - %(levelname)6s: %(message)s'
     
     # App log file rotation scheduling
     
-    #APP_LOG_ROTATION_TIME = 'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    # Valid values for rotation time:
+    #     'S','M','H','D','W0'-'W6','midnight'
+    #APP_LOG_ROTATION_TIME = 'midnight'
     #APP_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
     #APP_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
 
     # Class session log config
 
-    #CLASS_LOG_DIR = os.path.join(DATA_DIR,
-    #     'class_logs')  # directory to store application logs
+    # directory to store class session logs
+    #CLASS_LOG_DIR = os.path.join(DATA_DIR, 'class_logs')
     #CLASS_LOG_FILENAME_FORMAT_STR = 'Logs-{}.txt'
     #CLASS_LOG_FORMAT_STR = '%(asctime)s %(message)s'
     #CLASS_LOG_DATE_FORMAT_STR = '[%H:%M:%S]'
@@ -290,8 +303,9 @@ class DeployConfig(Config):
     
     # Class log file rotation scheduling
     
-    #CLASS_LOG_ROTATION_TIME = \
-    #     'midnight'  # 'S','M','H','D','W0'-'W6','midnight'
+    # Valid values for rotation time:
+    #     'S','M','H','D','W0'-'W6','midnight'
+    #CLASS_LOG_ROTATION_TIME = 'midnight'
     #CLASS_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
     #CLASS_LOG_BACKUP_COUNT = 10  # Don't set to less than 1
 
@@ -299,13 +313,15 @@ class DeployConfig(Config):
     #LINKS_FILE = os.path.join(DATA_DIR, 'links.json')
 
     # Other config data
-    #SESSION_START_MSG = '----------SESSION STARTS----------'
+
+    #SESSION_START_MSG = '----------SESSION STARTS----------\nRoll Call...'
     #SESSION_END_MSG = '----------SESSION ENDS----------'
     #BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/"
     #IRC_SERVER = 'irc.freenode.net'
     #IRC_SERVER_PORT = 6667
 
     # Enabled/disabled commands or features
+
     #SHOW_QUEUE_STATUS_ENABLED = False
     #LEAVE_QUEUE_ENABLED = True
     #GIVEMELOGS_ENABLED = True
@@ -314,7 +330,6 @@ class DeployConfig(Config):
 
     def __repr__(self):
         data = self.__class__.__dict__.copy()
-        #data['mode'] = 'deploy'
         data.pop('__doc__', None)
         data.pop('__repr__', None)
         data.pop('__module__', None)

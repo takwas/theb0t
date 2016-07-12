@@ -41,7 +41,7 @@ class MessageLogger(object):
 
         self.logger = logging.getLogger('classLogger')
         self.filename = filename or 'Logs-{}.txt'.format(
-            datetime.now().strftime('%Y-%m-%d-%H-%M'))
+            datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
 
         log_formatter = logging.Formatter(
             fmt=format_str, datefmt=date_fmt)
@@ -73,10 +73,25 @@ class MessageLogger(object):
         if self.logger is not None:
             for handler in self.logger.handlers:
                 if isinstance(handler, TimedRotatingFileHandler):
-                    handler.doRollOver()   
+                    handler.doRollover()   
                 handler.flush()
                 handler.close()
             del self.logger.handlers[:]
+
+    def pastebin_log(self, logger=None):
+        from fpaste import main
+        import sys
+        if self.filename is not None:
+            sys.argv = ['fpaste', self.filename]
+            try:
+                short_url, url = main()
+                return short_url, url
+            except:
+                if logger is not None:
+                    logger.error('Log uploading to Fedora Paste failed!',
+                        exc_info=True)
+        return None    
+
 
 # Get logger instance
 def get_logger_instance():

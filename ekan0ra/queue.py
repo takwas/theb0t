@@ -3,17 +3,14 @@
     ekan0ra.queue
     ~~~~~~~~~~~~~
 
-    A basic implementation of a generic use-case queue. It's called
-    QuestionQueue because within this package, it is used to track IRC
-    users who either indicate that they have questions to ask or no
-    longer have questions to ask.
+    A basic implementation of a generic use-case queue.
 
     :copyright: 
     :license:
 """
 
 
-class QuestionQueue(list):
+class Queue(list):
     """A basic FIFO queue implementation.
 
     This is implemented as an extension of the `list` datatype.

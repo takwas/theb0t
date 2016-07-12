@@ -26,7 +26,7 @@ import utils
 from . import APP_LOGGER
 from .commands import commands
 from .logger import get_logger_instance
-from .queue import QuestionQueue
+from .queue import Queue
 from .user import IRCUser, InvalidUserError
 
 
@@ -59,10 +59,11 @@ class LogBot(irc.IRCClient):
         self.nickname = config.BOTNICK
         self.channel = config.CHANNEL
         self.channel_admins_list = list(config.ADMINS) # IRC users who can control this bot
-        self.qs_queue = QuestionQueue()
+        self.qs_queue = Queue()       
         self.load_links()
         self.logger = get_logger_instance()
         self.last_log_filename = self.logger.filename
+        self.fpaste_url = None
         APP_LOGGER.info('Logging bot finished initializing.')
 
     def add_admin(self, nick):
@@ -105,7 +106,7 @@ class LogBot(irc.IRCClient):
             log_file_path = os.path.join(
                 self.config.CLASS_LOG_DIR,
                 self.config.CLASS_LOG_FILENAME_FORMAT_STR.format(
-                    datetime.now().strftime('%Y-%m-%d-%H-%M')
+                    datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
                 )
             )
             self.logger.create_new_log(
@@ -142,8 +143,16 @@ class LogBot(irc.IRCClient):
                 '[## Class Ended at %s ##]' %
                     time.asctime(time.localtime(time.time()))
             )
+            APP_LOGGER.info('Uploading log to Fedora Paste server...')
+            result = self.logger.pastebin_log(logger=APP_LOGGER)
+            if result is not None:
+                self.fpaste_url = result[1]
+                APP_LOGGER.info('Upload was succesful.\n\tURL: %s',
+                    self.fpaste_url)
+            else:
+                self.fpaste_url = None
+                APP_LOGGER.warning('Upload failed!')
             self.logger.close()
-            #self.upload_logs(channel)
             self.last_log_filename = self.logger.filename
             self.islogging = False
             APP_LOGGER.info(
@@ -196,7 +205,7 @@ class LogBot(irc.IRCClient):
     def say(self, channel, msg, *args, **kwargs):
         """Send `msg` to `channel`.
 
-        `channel` can either be a channel or a channel.
+        `channel` can either be an IRC channel or a user's nick.
         """
         APP_LOGGER.info('\nCHANNEL:\t%s\nBOT MSG:\t%s', channel, msg)
         irc.IRCClient.msg(self, channel, msg, *args, **kwargs)
@@ -218,9 +227,11 @@ class LogBot(irc.IRCClient):
         """Reset the channel's topic to its default."""
         self.setTopic(self.config.BASE_TOPIC)
 
-    def show_queue_status(self):
+    def show_queue_status(self, channel=None):
         """Show the users still in the question queue."""
-        self.describe(self.channel, 'Queue: [%r]' % ', '.join(self.qs_queue))
+        if channel is None:
+            channel = self.channel
+        self.describe(channel, 'Queue: %r' % self.qs_queue)
 
     def privmsg(self, hostmask, channel, msg):
         """Called when the bot receives a message."""
@@ -232,6 +243,8 @@ class LogBot(irc.IRCClient):
                 'MESSAGE:\t%s\nSENDER:\t%s\nCHANNEL:\t%s', msg, user.nick, channel
             )
 
+            # `channel == self.nickname`
+            # determines if a message is a private message
             if self.islogging and not channel == self.nickname:
                 # Don't log private messages with class log
                 self.logger.log(
@@ -239,54 +252,63 @@ class LogBot(irc.IRCClient):
                     (user.nick, msg))
 
         
-            # is the message sender an admin
+            # Is the message sender an admin?
             if user.is_admin():
             # process message from admin
 
-                if channel == self.nickname:
-                # Message is a private message from an admin
-                    if msg.lower().startswith('.startclass'):
-                        if not self.islogging:
-                            arg_pos = msg.find(' ')
-                            if arg_pos >= 0:
-                                topic = msg[arg_pos:].strip()
-                            else:
-                                topic = None
-                            if self.startlogging(topic):
-                                self.say(
-                                    user.nick,
-                                    'Session logging started successfully!'
-                                )
-                                self.say(
-                                    self.channel, self.config.SESSION_START_MSG
-                                )
-                                self.log_issuer = user.nick
-                            else:
-                                self.say(user.nick, 'Logging failed to start!')
+                if msg.lower().startswith('.startclass') and \
+                        channel == self.nickname:
+                    if not self.islogging:
+                        arg_pos = msg.find(' ')
+                        if arg_pos >= 0:
+                            topic = msg[arg_pos:].strip()
                         else:
+                            topic = None
+                        if self.startlogging(topic):
+                            self.clearqueue()
                             self.say(
                                 user.nick,
-                                'Session logging already started by %s. No extra '
-                                    'logging started.' % self.log_issuer
+                                'Session logging started successfully!'
                             )
-                        
-                    if msg.lower().endswith('.endclass'):
-                        if self.stoplogging():
                             self.say(
-                                user.nick,
-                                'Session logging terminated successfully!'
-                            )
-                            self.say(self.channel, self.config.SESSION_END_MSG)
+                                self.channel, self.config.SESSION_START_MSG
+                            ) 
+                            if topic is not None:
+                                self.say(self.channel, 'TOPIC: %s' % topic)
+                            self.say(self.channel, 'Roll Call...')
+                            self.log_issuer = user.nick
                         else:
-                            self.say(user.nick, 'Logging failed to terminate!')
+                            self.say(user.nick, 'Logging failed to start!')
+                    else:
+                        self.say(
+                            user.nick,
+                            'Session logging already started by %s. No extra '
+                                'logging started.' % self.log_issuer
+                        )
+                    
+                elif msg.lower().endswith('.endclass') and \
+                        channel == self.nickname:
+                    if self.stoplogging():
+                        self.say(
+                            user.nick,
+                            'Session logging terminated successfully!'
+                        )
+                        self.say(self.channel, self.config.SESSION_END_MSG)
+                    else:
+                        self.say(user.nick, 'Logging failed to terminate!')
 
-                elif msg == '.clearqueue':
+                elif msg == '.clearqueue' and \
+                        channel == self.nickname:
                     self.clearqueue()
                     self.say(self.channel, 'Queue is cleared.')
+
+                elif msg == '.showqueue' and \
+                        channel == self.nickname:
+                    self.show_queue_status(user.nick)
                 
                 elif msg == '.next' and not self.islogging:
                     self.say(
-                        self.channel,
+                        channel,
                         '%s: No session is going on. No one is in queue.' %
                             user.nick
                     )
@@ -296,22 +318,25 @@ class LogBot(irc.IRCClient):
                         nick = self.qs_queue.pop_next()
                         msg = '%s: Please ask your question.' % nick
                         if self.qs_queue.has_next():
-                            msg = '%s\n%s: You are next. Get ready with your ' \
-                                'question.' % (msg, self.qs_queue.peek_next())
+                            msg = '%s\n%s: You are next. Get ready with ' \
+                                'your question.' % (
+                                    msg, self.qs_queue.peek_next())
                         self.say(self.channel, msg)
                         if self.config.SHOW_QUEUE_STATUS_ENABLED:
-                            self.show_queue_status()
+                            self.show_queue_status(channel)
                     else:
                         self.say(self.channel, 'No one is in queue.')
 
-                elif msg == '.masters':
+                elif msg == '.masters' and \
+                        channel == self.nickname:
                     self.say(
                         self.channel,
                         'My current masters are: %s' %
                             ', '.join(self.channel_admins_list)
                     )
 
-                elif msg.startswith('.add'):
+                elif msg.startswith('.add') and \
+                        channel == self.nickname:
                     try:
                         nick = msg.split()[1]
                         if nick in self.channel_admins_list:
@@ -328,7 +353,8 @@ class LogBot(irc.IRCClient):
                             'Error adding admin!', exc_info=True
                         )
 
-                elif msg.startswith('.rm'):
+                elif msg.startswith('.rm') and \
+                        channel == self.nickname:
                     try:
                         nick = msg.split()[1]
                         self.remove_admin(nick)
@@ -340,52 +366,48 @@ class LogBot(irc.IRCClient):
                         )
 
                 elif msg.lower().startswith('.pingall') and \
-                        self.config.PINGALL_ENABLED:
+                        self.config.PINGALL_ENABLED and not \
+                        channel == self.nickname:
                     self.pingmsg = msg.lower().lstrip('.pingall')
                     self.names(channel).addCallback(self.pingall)
+
+                elif msg.startswith('.link') and self.config.LINKS_ENABLED and
+                        channel == self.nickname:
+                    self.links_for_key(msg, channel=user.nick)
             # end processing admin message
 
 
             # User wants to ask a question
-            if msg == '!'  and self.islogging:
+            if msg == '!' and self.islogging and not \
+                    channel == self.nickname:
                 self.qs_queue.enqueue(user.nick)
                 if self.config.SHOW_QUEUE_STATUS_ENABLED:
-                    self.show_queue_status()
+                    self.show_queue_status(channel)
 
             # User no longer wants to ask a question; remove them from queue
-            elif msg in ('!-', '!!')  and self.islogging and \
-                    self.config.LEAVE_QUEUE_ENABLED:
+            elif msg in ('!-', '!!') and self.islogging and \
+                    self.config.LEAVE_QUEUE_ENABLED and not \
+                    channel == self.nickname:
                 result = self.qs_queue.dequeue(user.nick)
                 if result == True and \
                         self.config.SHOW_QUEUE_STATUS_ENABLED:
-                    self.show_queue_status()
+                    self.show_queue_status(channel)
 
             elif msg in ('!', '!-', '!!') and not self.islogging:
                 self.say(
-                    self.channel,
-                    '%s: No session is going on, feel free to ask a question. '
-                        'You do not have to type %s' % (user.nick, msg)
+                    channel,
+                    '%s: No session is going on, feel free to ask a '
+                    'question. You do not have to type %s' % (user.nick, msg)
                 )
             # end processing question indicator   
 
             elif msg == '.givemelogs' and self.config.GIVEMELOGS_ENABLED:
-                if not self.last_log_filename:
+                if self.fpaste_url is None:
                     self.say(user.nick, 'Sorry, I do not have the last log.')
                     APP_LOGGER.warning('Could not find last class log!')
                 else:
-                    sys.argv = ['fpaste', self.last_log_filename]
-                    try:
-                        short_url, url = fpaste.main()
-                        APP_LOGGER.info(
-                            'Class Log uploaded.\nFedora Paste URLs:\n\t1. Short:'
-                                ' %s\n\t2. Long: %s', short_url, url
-                        )
-                        self.say(user.nick, url)
-                    except:
-                        self.say(user.nick, 'Hit a 500! I have a crash on you.')
-                        APP_LOGGER.error(
-                            'Log uploading to Fedora failed!', exc_info=True
-                        )
+                    self.say(user.nick, 'View last class log here: %s' %
+                        self.fpaste_url)
             
             elif msg == '.help':
                 padding_width = \
@@ -395,11 +417,9 @@ class LogBot(irc.IRCClient):
                         user.nick,
                         utils.get_help_text(command, padding=padding_width+1)
                     )      
-
-            elif msg.startswith('.link') and self.config.LINKS_ENABLED:
-                self.links_for_key(msg)
         except:
-            APP_LOGGER.error('Error parsing received message!', exc_info=True)
+            APP_LOGGER.error('Error parsing/processing received message!',
+                exc_info=True)
             self.say(self.channel, '500!')  # Quietly announce in channel.
 
     def action(self, hostmask, channel, msg):
@@ -448,12 +468,13 @@ class LogBot(irc.IRCClient):
         n += nicklist
 
     # Function to return requested links
-    def links_for_key(self, msg):
-        """Parse `msg` and and provide requested link (URL).
+    def links_for_key(self, msg, channel=None):
+        """Parse `msg` and provide requested link (URL).
 
         Args:
             msg: Message to parse.
         """
+        channel = self.channel if channel is None
         try:
             keyword = msg.split()[1]
             if not keyword:
@@ -463,7 +484,7 @@ class LogBot(irc.IRCClient):
                 'No keyword argument provided for `.link` command',
                 exc_info=True)
             self.say(
-                self.channel, '.link needs a keyword as argument. Check .help for details.'
+                channel, '.link needs a keyword as argument. Check .help for details.'
             )
             return
 
@@ -471,13 +492,13 @@ class LogBot(irc.IRCClient):
             self.load_links()
         elif keyword in ['-l', 'help']:
             self.say(
-                self.channel,
+                channel,
                 'Valid options for `.link`:\t[%s]' %
                     str(', '.join(self.links_data.keys()))
             )
         else:
             self.say(
-                self.channel,
+                channel,
                 str(
                     self.links_data.get(
                         str(keyword),

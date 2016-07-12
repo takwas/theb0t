@@ -12,18 +12,19 @@
 
 
 commands = {
-    '.help' : 'list all the commands',
+    '.help' : 'List all the commands',
     '!' : 'Queue yourself to ask a question during a session',
     '!!' : 'Remove yourself from question queue during a session',
     '!-' : 'Remove yourself from question queue during a session',
-    '.givemelogs' : 'Give you a fpaste link with the latest log',
-    '.clearqueue' : 'Clear the ask question queue',
-    '.next' : 'ping the person in the queue to ask question',
-    '.masters' : 'returns the list of all the masters',
-    '.add [nick]' : 'adds the nick to masters list',
-    '.rm [nick]' : 'removes the nick from masters list',
-    '.startclass' : 'start logging the class',
-    '.endclass' : 'ends logging the class',
-    '.pingall [message]' : 'pings the message to all',    
-    '.link [portal]' : 'Returns the link of the portal'
+    '.givemelogs' : 'Give you an fpaste link with the latest log',
+    '.clearqueue' : 'Clear the question queue',
+    '.showqueue' : 'Show the status of the question queue',
+    '.next' : 'Ping the next person in the queue to ask their question',
+    '.masters' : 'Show the list of all the masters (admins)',
+    '.add [nick]' : 'Add [nick] to masters list',
+    '.rm [nick]' : 'Remove [nick] from masters list',
+    '.startclass' : 'Start logging a class',
+    '.endclass' : 'Stop logging a class',
+    '.pingall [message]' : 'Ping all present channel members with [message]',
+    '.link [resource]' : 'Show the URL of requested `resource`'
 }
