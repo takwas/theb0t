@@ -35,7 +35,8 @@ class MessageLogger(object):
             when='midnight',
             interval=1,
             backupCount=10):
-        assert when in ('S', 'M', 'H', 'D', 'W0', 'W6', 'midnight',)
+        assert when.lower() in ('s', 'm', 'h', 'd', 'midnight',
+                                'w0', 'w1', 'w2', 'w3', 'w4', 'w5', 'w6',)
         assert interval > 0
         assert backupCount > 0
 

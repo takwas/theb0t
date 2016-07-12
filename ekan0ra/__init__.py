@@ -22,7 +22,8 @@ def setup_app_logger(config):
     # log file rotation scheduling
     when, interval, backupCount = config.APP_LOG_ROTATION_TIME, \
         config.APP_LOG_ROTATION_INTERVAL, config.APP_LOG_BACKUP_COUNT
-    assert when in ('S', 'M', 'H', 'D', 'W0', 'W6', 'midnight',)
+    assert when.lower() in ('s', 'm', 'h', 'd', 'midnight',
+                            'w0', 'w1', 'w2', 'w3', 'w4', 'w5', 'w6',)
     assert interval > 0
     assert backupCount > 0
 
