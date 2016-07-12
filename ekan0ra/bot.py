@@ -371,7 +371,8 @@ class LogBot(irc.IRCClient):
                     self.pingmsg = msg.lower().lstrip('.pingall')
                     self.names(channel).addCallback(self.pingall)
 
-                elif msg.startswith('.link') and self.config.LINKS_ENABLED and
+                elif msg.startswith('.link') and \
+                        self.config.LINKS_ENABLED and \
                         channel == self.nickname:
                     self.links_for_key(msg, channel=user.nick)
             # end processing admin message
@@ -474,7 +475,7 @@ class LogBot(irc.IRCClient):
         Args:
             msg: Message to parse.
         """
-        channel = self.channel if channel is None
+        channel = self.channel if channel is None else channel
         try:
             keyword = msg.split()[1]
             if not keyword:

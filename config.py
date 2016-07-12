@@ -171,13 +171,13 @@ class TestConfig(Config):
     
     # Bot attributes
 
-    #BOTNICK = 'sawkat'  # The IRC nick of the bot
+    BOTNICK = 'sawkat'  # The IRC nick of the bot
     # IRC channel to log; use appropriate channel
     # prefix like '#'; #botters-test is a standard
     # IRC bot testing channel
-    #CHANNEL = '#botters-test'
+    CHANNEL = '#botters-test'
     # List of IRC nicks of bot's admins/masters 
-    #ADMINS = ('acetakwas', )
+    ADMINS = ('acetakwas', )
 
 
     ####################

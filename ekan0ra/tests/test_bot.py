@@ -21,13 +21,12 @@ config = config_modes.get('test')
 
 class BotCommandsTest(unittest.TestCase):
 
-    @mock.patch('ekan0ra.bot.create_app_logger') # Fake creation of app logger
-    @mock.patch.object(LogBot, 'links_reload', auto_spec=True) # Fake links data load
+    @mock.patch.object(LogBot, 'load_links', auto_spec=True) # Fake links data load
     @mock.patch('ekan0ra.bot.get_logger_instance') # Fake logger creation
     @mock.patch('ekan0ra.bot.irc.IRCClient')
     def setUp(
             self, mock_irc_IRCClient, mock_get_logger_instance,
-            mock_links_reload, mock_create_app_logger):
+            mock_links_reload):
         ####TODO: Add more valid hostmask patterns to test
         self.validhostmasks = [
             'sawkateca!~sawkateca@41.203.71.181',
@@ -42,9 +41,6 @@ class BotCommandsTest(unittest.TestCase):
         ]
 
         self.assertFalse(
-            mock_create_app_logger.called,
-            'Create app logger was called too early')
-        self.assertFalse(
             mock_links_reload.called,
             'Reload links was called too early')
         self.assertFalse(
@@ -55,7 +51,6 @@ class BotCommandsTest(unittest.TestCase):
         self.bot.islogging = True # Fake logging
         
         mock_irc_IRCClient.connectionMade.assert_called_with(self.bot)
-        mock_create_app_logger.assert_called_with(config)
 
     @mock.patch('ekan0ra.bot.irc.IRCClient')
     @mock.patch.object(LogBot, 'describe', auto_spec=True) # Fake links data load
