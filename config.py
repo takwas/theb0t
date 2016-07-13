@@ -6,13 +6,12 @@ import os
 # representations for config classes
 running_mode = 'App running in {mode} mode. With configs:\n{configs}'
 
+# Directory to store application data like logs, links...
+DATA_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
+
 
 # Base configuration class that will be extended
-class Config(object):
-
-    # Directory to store application data like logs, links...
-    DATA_DIR = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 'data')  
+class Config(object): 
 
     # Main application log config
 
@@ -65,6 +64,7 @@ class Config(object):
     GIVEMELOGS_ENABLED = True
     LINKS_ENABLED = True
     PINGALL_ENABLED = True
+    CHANGE_TOPIC_ENABLED = True
 
 
 # Configuration used during
@@ -148,6 +148,7 @@ class DevConfig(Config):
     #GIVEMELOGS_ENABLED = True
     #LINKS_ENABLED = True
     #PINGALL_ENABLED = True
+    #CHANGE_TOPIC_ENABLED = True
 
     def __repr__(self):
         data = self.__class__.__dict__.copy()
@@ -236,6 +237,7 @@ class TestConfig(Config):
     #GIVEMELOGS_ENABLED = True
     #LINKS_ENABLED = True
     #PINGALL_ENABLED = True
+    #CHANGE_TOPIC_ENABLED = True
 
     def __repr__(self):
         data = self.__class__.__dict__.copy()
@@ -327,6 +329,7 @@ class DeployConfig(Config):
     GIVEMELOGS_ENABLED = True
     LINKS_ENABLED = True
     PINGALL_ENABLED = True
+    CHANGE_TOPIC_ENABLED = True
 
     def __repr__(self):
         data = self.__class__.__dict__.copy()

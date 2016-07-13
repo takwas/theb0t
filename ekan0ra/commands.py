@@ -23,7 +23,8 @@ commands = {
     '.masters' : 'Show the list of all the masters (admins)',
     '.add [nick]' : 'Add [nick] to masters list',
     '.rm [nick]' : 'Remove [nick] from masters list',
-    '.startclass' : 'Start logging a class',
+    '.startclass [topic]' :
+        'Start logging a class; Append optional [topic] to channel topic',
     '.endclass' : 'Stop logging a class',
     '.pingall [message]' : 'Ping all present channel members with [message]',
     '.link [resource]' : 'Show the URL of requested `resource`'

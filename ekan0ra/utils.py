@@ -25,11 +25,22 @@ def validate_channel(channel):
 #     return links_list.keys()
 
 
-def get_help_text(command, padding=15):
+def get_help_info(command=None):
     """Retrieve and format help text for `command`."""
-    help_text = commands.get(command, None)
-    if help_text is None:
-        return ''
-    return ' %-{padding}s|  {help_text}'.format(
-        padding=padding,
-        help_text=help_text) % command
+    if command is None:
+        basic_cmds = [cmd.split()[0] for cmd in commands.keys()]    
+        return 'To see details of a command, type:\n\t`.help [command]`' \
+            '\nCommands are:\n\t{}'.format(', '.join(sorted(basic_cmds)))
+    else:
+        command = str(command).strip()
+        key, value = command, commands.get(command, None)
+        if value is None:
+            for k, v in commands.iteritems():
+                if k.find(command) == 0:
+                    key, value = k, v
+                    break
+            else:
+                return '%s is not a valid command.' % command
+
+        return 'Usage:\n\t{cmd}\nDescription:\n\t{desc}'.format(
+            cmd=key, desc=value)

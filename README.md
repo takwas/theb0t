@@ -35,14 +35,14 @@ You can send the following commands to the bot in a _PM_:
 |`!`|Queue yourself to ask a question during a session|Channel|Any user|
 |`!!`|Remove yourself from question queue during a session|Channel|Any user|
 |`!-`|Remove yourself from question queue during a session|Channel|Any user|
-|`.givemelogs`|Give you an fpaste link with the latest log|PM/Channel|Any user|
+|`.givemelogs`|Give you an fpaste link with the latest log|PM|Any user|
 |`.clearqueue`|Clear the question queue|PM/Channel|Admin|
 |`.showqueue`|Show the status of the question queue|PM/Channel|Admin|
 |`.next`|Ping the next person in the queue to ask their question|PM/Channel|Admin|
 |`.masters`|Show the list of all the masters (admins)|PM/Channel|Admin|
 |`.add [nick]`|Add `nick` to masters list|PM/Channel|Admin|
 |`.rm [nick]`|Remove `nick` from masters list|PM/Channel|Admin|
-|`.startclass`|Start logging a class|PM|Admin|
+|`.startclass [topic]`|Start logging a class; Append optional `topic` to channel topic|PM|Admin|
 |`.endclass`|Stop logging a class|PM|Admin|
 |`.pingall [message]`|Ping present channel members with `message`|PM/Channel|Admin|
 |`.link [resource]`|Show the URL of requested `resource`|PM/Channel|Any user|

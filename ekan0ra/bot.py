@@ -30,6 +30,9 @@ from .queue import Queue
 from .user import IRCUser, InvalidUserError
 
 
+help_info = utils.get_help_info()
+
+
 class LogBot(irc.IRCClient):
     """A logging IRC bot.
 
@@ -98,7 +101,7 @@ class LogBot(irc.IRCClient):
         self.islogging = False
         self._namescallback = {}
 
-    def startlogging(self, topic=None):
+    def startlogging(self, new_topic=None):
         """Setup and begin logging a class session."""
         APP_LOGGER.info('About to start logging class session...')
         try:
@@ -117,15 +120,22 @@ class LogBot(irc.IRCClient):
                 self.config.CLASS_LOG_ROTATION_TIME,
                 self.config.CLASS_LOG_ROTATION_INTERVAL,
                 self.config.CLASS_LOG_BACKUP_COUNT)
+            start_time = time.localtime()
             self.logger.log(
                 '[## Class Started at %s ##]' % 
-                    time.asctime(time.localtime(time.time()))
+                    time.asctime(start_time)
             )
             self.islogging = True
             APP_LOGGER.info(
                 'Class session logging started successfully!'
             )
-            if topic:
+            topic = 'Welcome to DgpLUG Summer Training {} | ONGOING SESSION' \
+                    ' (Started: {})'.format(start_time.tm_year,
+                        '%02d:%02d' % (
+                            start_time.tm_hour, start_time.tm_min))
+            if new_topic:
+                topic += ' | Topic: %s' % new_topic
+            if self.config.CHANGE_TOPIC_ENABLED:
                 self.setTopic(topic)
         except:
             APP_LOGGER.error(
@@ -150,6 +160,9 @@ class LogBot(irc.IRCClient):
                 self.fpaste_url = result[1]
                 APP_LOGGER.info('Upload was succesful.\n\tURL: %s',
                     self.fpaste_url)
+                for admin in self.channel_admins_list:
+                    self.say(admin, 'Log was uploaded to: %s' % \
+                        self.fpaste_url)
             else:
                 self.fpaste_url = None
                 APP_LOGGER.warning('Upload failed!')
@@ -214,14 +227,9 @@ class LogBot(irc.IRCClient):
     def setTopic(self, topic):
         """Modify the topic of the channel.
 
-        Appends `topic` to default topic set in configuration, and sets
-        this as the channel's topic.
-
         Args:
             topic: The message to set as topic.
         """
-        topic = self.config.BASE_TOPIC + ' | ' + topic
-        APP_LOGGER.info('BOT ACTION (Topic Change):\n\t%s', topic)
         irc.IRCClient.topic(self, self.channel, topic)
 
     def resetTopic(self):
@@ -233,6 +241,58 @@ class LogBot(irc.IRCClient):
         if channel is None:
             channel = self.channel
         self.describe(channel, 'Queue: %r' % self.qs_queue)
+
+    # Function to return requested links
+    def links_for_key(self, msg, channel=None):
+        """Parse `msg` and provide requested link (URL).
+
+        Args:
+            msg: Message to parse.
+        """
+        channel = self.channel if channel is None else channel
+        try:
+            keyword = msg.split()[1]
+            if not keyword:
+                raise IndexError
+        except IndexError:
+            APP_LOGGER.error(
+                'No keyword argument provided for `.link` command',
+                exc_info=True)
+            self.say(
+                channel, '.link needs a keyword as argument. Check .help for details.'
+            )
+            return
+
+        if keyword == 'reload':
+            self.load_links()
+        elif keyword in ['-l', 'help']:
+            self.say(
+                channel,
+                'Valid options for `.link`:\t[%s]' %
+                    str(', '.join(self.links_data.keys()))
+            )
+        else:
+            self.say(
+                channel,
+                str(
+                    self.links_data.get(
+                        str(keyword),
+                        'Keyword "%s" does not exist! Type [.link help] or '
+                            '[.link -l] to see valid keywords' % keyword
+                    )
+                )
+            )
+
+    def show_help(self, msg, channel):
+        """Show help info about the bot's recognized commands."""
+        try:
+            command = msg.split()[1]
+            if not command:
+                raise IndexError
+        except IndexError:
+            self.say(channel, help_info)
+        else:
+            self.say(channel, utils.get_help_info(command))
 
     def privmsg(self, hostmask, channel, msg):
         """Called when the bot receives a message."""
@@ -262,10 +322,10 @@ class LogBot(irc.IRCClient):
                     if not self.islogging:
                         arg_pos = msg.find(' ')
                         if arg_pos >= 0:
-                            topic = msg[arg_pos:].strip()
+                            new_topic = msg[arg_pos:].strip()
                         else:
-                            topic = None
-                        if self.startlogging(topic):
+                            new_topic = None
+                        if self.startlogging(new_topic):
                             self.clearqueue()
                             self.say(
                                 user.nick,
@@ -274,8 +334,9 @@ class LogBot(irc.IRCClient):
                             self.say(
                                 self.channel, self.config.SESSION_START_MSG
                             ) 
-                            if topic is not None:
-                                self.say(self.channel, 'TOPIC: %s' % topic)
+                            if new_topic is not None:
+                                self.say(self.channel,
+                                    'TOPIC: %s' % new_topic)
                             self.say(self.channel, 'Roll Call...')
                             self.log_issuer = user.nick
                         else:
@@ -403,7 +464,8 @@ class LogBot(irc.IRCClient):
                 )
             # end processing question indicator   
 
-            elif msg == '.givemelogs' and self.config.GIVEMELOGS_ENABLED:
+            elif msg == '.givemelogs' and self.config.GIVEMELOGS_ENABLED and \
+                    channel == self.nickname:
                 if self.fpaste_url is None:
                     self.say(user.nick, 'Sorry, I do not have the last log.')
                     APP_LOGGER.warning('Could not find last class log!')
@@ -411,18 +473,12 @@ class LogBot(irc.IRCClient):
                     self.say(user.nick, 'View last class log here: %s' %
                         self.fpaste_url)
             
-            elif msg == '.help':
-                padding_width = \
-                    max([len(command) for command in commands.keys()])
-                for command in commands.keys():
-                    self.say(
-                        user.nick,
-                        utils.get_help_text(command, padding=padding_width+1)
-                    )      
+            elif msg.startswith('.help'):
+                self.show_help(msg, channel=user.nick)
         except:
             APP_LOGGER.error('Error parsing/processing received message!',
                 exc_info=True)
-            self.say(self.channel, '500!')  # Quietly announce in channel.
+            self.describe(self.channel, '500!')  # Quietly announce in channel.
 
     def action(self, hostmask, channel, msg):
         """This will get called when the bot sees someone do an action."""
@@ -468,47 +524,6 @@ class LogBot(irc.IRCClient):
 
         n = self._namescallback[channel][1]
         n += nicklist
-
-    # Function to return requested links
-    def links_for_key(self, msg, channel=None):
-        """Parse `msg` and provide requested link (URL).
-
-        Args:
-            msg: Message to parse.
-        """
-        channel = self.channel if channel is None else channel
-        try:
-            keyword = msg.split()[1]
-            if not keyword:
-                raise IndexError
-        except IndexError:
-            APP_LOGGER.error(
-                'No keyword argument provided for `.link` command',
-                exc_info=True)
-            self.say(
-                channel, '.link needs a keyword as argument. Check .help for details.'
-            )
-            return
-
-        if keyword == 'reload':
-            self.load_links()
-        elif keyword in ['-l', 'help']:
-            self.say(
-                channel,
-                'Valid options for `.link`:\t[%s]' %
-                    str(', '.join(self.links_data.keys()))
-            )
-        else:
-            self.say(
-                channel,
-                str(
-                    self.links_data.get(
-                        str(keyword),
-                        'Keyword "%s" does not exist! Type [.link help] or '
-                            '[.link -l] to see valid keywords' % keyword
-                    )
-                )
-            )
 
     def irc_RPL_ENDOFNAMES(self, prefix, params):
         channel = params[1].lower()
