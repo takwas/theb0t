@@ -270,8 +270,7 @@ class DeployConfig(Config):
             'mbuf',
             'rtnpro',
             'chandankumar',
-            'praveenkumar',
-            'acetakwas',)  
+            'praveenkumar',)  
 
     
     ####################
@@ -319,13 +318,13 @@ class DeployConfig(Config):
 
     SESSION_START_MSG = '----------SESSION STARTS----------'
     SESSION_END_MSG = '----------SESSION ENDS----------'
-    BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/ | Start reading from http://www.vogella.com/tutorials/Git/article.html"
+    BASE_TOPIC = "Welcome to Linux User's Group of Durgapur | Mailing list at http://lists.dgplug.org/listinfo.cgi/users-dgplug.org | Old classes https://www.dgplug.org/irclogs/ | https://docs.python.org/3/tutorial/ | https://dgplug.org/summertraining16/"
     IRC_SERVER = 'irc.freenode.net'
     IRC_SERVER_PORT = 6667
 
     # Enabled/disabled commands or features
 
-    SHOW_QUEUE_STATUS_ENABLED = True
+    SHOW_QUEUE_STATUS_ENABLED = False
     LEAVE_QUEUE_ENABLED = True
     GIVEMELOGS_ENABLED = True
     LINKS_ENABLED = True
