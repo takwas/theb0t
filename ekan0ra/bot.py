@@ -364,7 +364,7 @@ class LogBot(irc.IRCClient):
                     self.clearqueue(channel=user.nick)
 
                 elif msg == '.showqueue':
-                    self.show_queue_status(channel=user.nick)
+                    self.show_queue_status(channel=channel)
                 
                 elif msg == '.next' and not self.islogging:
                     self.say(
