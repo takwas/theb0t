@@ -325,7 +325,7 @@ class DeployConfig(Config):
 
     # Enabled/disabled commands or features
 
-    SHOW_QUEUE_STATUS_ENABLED = False
+    SHOW_QUEUE_STATUS_ENABLED = True
     LEAVE_QUEUE_ENABLED = True
     GIVEMELOGS_ENABLED = True
     LINKS_ENABLED = True
