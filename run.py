@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # standard library imports
 import logging
+import os
 import sys
 
 # third-party imports
@@ -18,7 +19,7 @@ from ekan0ra.factory import LogBotFactory
 #
 # Valid values for `config_modes()` are:
 #   'default', 'dev', 'test', 'deploy'
-config = config_modes.get('default')()
+config = config_modes.get(os.getenv('LOGBOT_CONFIG', 'default'))()
 
 
 def create_bot(config):

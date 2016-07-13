@@ -110,8 +110,8 @@ class DevConfig(Config):
     # Valid values for rotation time:
     #     'S','M','H','D','W0'-'W6','midnight'
     APP_LOG_ROTATION_TIME = 'M'
-    #APP_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
-    APP_LOG_BACKUP_COUNT = 4  # Don't set to less than 1
+    APP_LOG_ROTATION_INTERVAL = 60  # Don't set to less than 1
+    APP_LOG_BACKUP_COUNT = 5  # Don't set to less than 1
 
     # Class session log config
 
@@ -127,8 +127,8 @@ class DevConfig(Config):
     # Valid values for rotation time:
     #     'S','M','H','D','W0'-'W6','midnight'
     CLASS_LOG_ROTATION_TIME = 'M'
-    #CLASS_LOG_ROTATION_INTERVAL = 1  # Don't set to less than 1
-    CLASS_LOG_BACKUP_COUNT = 4  # Don't set to less than 1
+    CLASS_LOG_ROTATION_INTERVAL = 60  # Don't set to less than 1
+    CLASS_LOG_BACKUP_COUNT = 5  # Don't set to less than 1
 
     # File that contains URLs
     #LINKS_FILE = os.path.join(DATA_DIR, 'links.json')

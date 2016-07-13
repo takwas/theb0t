@@ -70,30 +70,6 @@ class LogBot(irc.IRCClient):
         self.fpaste_url = None
         APP_LOGGER.info('Logging bot finished initializing.')
 
-    def add_admin(self, nick):
-        """Add `nick` to the list of recognized admins.
-
-        Args:
-            nick: IRC nick of user to be added as admin.
-        """
-        self.channel_admins_list.append(nick)
-
-    def remove_admin(self, nick):
-        """Remove `nick` from the list (queue) of recognized admins.
-
-        Args:
-            nick: IRC nick of user to be added as admin.
-        """
-        self.channel_admins_list = filter(
-            lambda x : x.lower() != nick.lower(),
-            self.channel_admins_list            
-        )
-
-    def clearqueue(self):
-        """Clear the list (queue) of users waiting to ask questions."""
-        self.qs_queue.clear()
-        APP_LOGGER.info('Question queue cleared!')
-
     def connectionMade(self):
         """Called when bot makes a connection to the server."""
         APP_LOGGER.debug('Connection made!')
@@ -120,19 +96,17 @@ class LogBot(irc.IRCClient):
                 self.config.CLASS_LOG_ROTATION_TIME,
                 self.config.CLASS_LOG_ROTATION_INTERVAL,
                 self.config.CLASS_LOG_BACKUP_COUNT)
-            start_time = time.localtime()
+            start_time = datetime.now()
             self.logger.log(
-                '[## Class Started at %s ##]' % 
-                    time.asctime(start_time)
-            )
+                '[## Class Started at %s ##]' % start_time.ctime())
             self.islogging = True
             APP_LOGGER.info(
                 'Class session logging started successfully!'
             )
-            topic = 'Welcome to DgpLUG Summer Training {} | ONGOING SESSION' \
-                    ' (Started: {})'.format(start_time.tm_year,
-                        '%02d:%02d' % (
-                            start_time.tm_hour, start_time.tm_min))
+            topic = 'Welcome to DgpLUG Summer Training {year} | ' \
+                'ONGOING SESSION (Started: {start_time}) | Type `.help` ' \
+                'for help'.format(year=start_time.year,
+                    start_time=start_time.strftime('%I:%M %p'))
             if new_topic:
                 topic += ' | Topic: %s' % new_topic
             if self.config.CHANGE_TOPIC_ENABLED:
@@ -150,10 +124,9 @@ class LogBot(irc.IRCClient):
         try:
             if not self.logger:
                 return
+            end_time = datetime.now()
             self.logger.log(
-                '[## Class Ended at %s ##]' %
-                    time.asctime(time.localtime(time.time()))
-            )
+                '[## Class Ended at %s ##]' % end_time.ctime())
             APP_LOGGER.info('Uploading log to Fedora Paste server...')
             result = self.logger.pastebin_log(logger=APP_LOGGER)
             if result is not None:
@@ -236,6 +209,33 @@ class LogBot(irc.IRCClient):
         """Reset the channel's topic to its default."""
         self.setTopic(self.config.BASE_TOPIC)
 
+    def add_admin(self, nick):
+        """Add `nick` to the list of recognized admins.
+
+        Args:
+            nick: IRC nick of user to be added as admin.
+        """
+        self.channel_admins_list.append(nick)
+
+    def remove_admin(self, nick):
+        """Remove `nick` from the list (queue) of recognized admins.
+
+        Args:
+            nick: IRC nick of user to be added as admin.
+        """
+        self.channel_admins_list = filter(
+            lambda x : x.lower() != nick.lower(),
+            self.channel_admins_list            
+        )
+
+    def clearqueue(self, channel=None):
+        """Clear the list (queue) of users waiting to ask questions."""
+        if channel is None:
+            channel = self.channel
+        self.qs_queue.clear()
+        self.describe(channel, 'Queue cleared!')
+        APP_LOGGER.info('Question queue cleared!')
+
     def show_queue_status(self, channel=None):
         """Show the users still in the question queue."""
         if channel is None:
@@ -301,7 +301,7 @@ class LogBot(irc.IRCClient):
             user = IRCUser(self, hostmask) # parse user object from given hostmask `user`
             msg = msg.strip()
             APP_LOGGER.info(
-                'MESSAGE:\t%s\nSENDER:\t%s\nCHANNEL:\t%s', msg, user.nick, channel
+                '\nMESSAGE:\t%s\nSENDER:\t%s\nCHANNEL:\t%s', msg, user.nick, channel
             )
 
             # `channel == self.nickname`
@@ -359,14 +359,12 @@ class LogBot(irc.IRCClient):
                     else:
                         self.say(user.nick, 'Logging failed to terminate!')
 
-                elif msg == '.clearqueue' and \
+                elif msg == '.clearqueue' and not \
                         channel == self.nickname:
-                    self.clearqueue()
-                    self.say(self.channel, 'Queue is cleared.')
+                    self.clearqueue(channel=user.nick)
 
-                elif msg == '.showqueue' and \
-                        channel == self.nickname:
-                    self.show_queue_status(user.nick)
+                elif msg == '.showqueue':
+                    self.show_queue_status(channel=user.nick)
                 
                 elif msg == '.next' and not self.islogging:
                     self.say(
@@ -375,7 +373,8 @@ class LogBot(irc.IRCClient):
                             user.nick
                     )
 
-                elif msg == '.next' and self.islogging:
+                elif msg == '.next' and self.islogging and not \
+                        channel == self.nickname:
                     if self.qs_queue.has_next():
                         nick = self.qs_queue.pop_next()
                         msg = '%s: Please ask your question.' % nick
