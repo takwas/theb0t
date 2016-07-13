@@ -361,7 +361,7 @@ class LogBot(irc.IRCClient):
 
                 elif msg == '.clearqueue' and not \
                         channel == self.nickname:
-                    self.clearqueue(channel=user.nick)
+                    self.clearqueue(channel=channel)
 
                 elif msg == '.showqueue':
                     self.show_queue_status(channel=channel)
@@ -396,8 +396,7 @@ class LogBot(irc.IRCClient):
                             ', '.join(self.channel_admins_list)
                     )
 
-                elif msg.startswith('.add') and \
-                        channel == self.nickname:
+                elif msg.startswith('.add'):
                     try:
                         nick = msg.split()[1]
                         if nick in self.channel_admins_list:
@@ -414,8 +413,7 @@ class LogBot(irc.IRCClient):
                             'Error adding admin!', exc_info=True
                         )
 
-                elif msg.startswith('.rm') and \
-                        channel == self.nickname:
+                elif msg.startswith('.rm'):
                     try:
                         nick = msg.split()[1]
                         self.remove_admin(nick)

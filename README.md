@@ -43,7 +43,7 @@ You can send the following commands to the bot in a _PM_:
 |`.clearqueue`|Clear the question queue|Channel|Admin|
 |`.showqueue`|Show the status of the question queue|PM/Channel|Admin|
 |`.next`|Ping the next person in the queue to ask their question|Channel|Admin|
-|`.masters`|Show the list of all the masters (admins)|PM/Channel|Admin|
+|`.masters`|Show the list of all the masters (admins)|PM|Admin|
 |`.add [nick]`|Add `nick` to masters list|PM/Channel|Admin|
 |`.rm [nick]`|Remove `nick` from masters list|PM/Channel|Admin|
 |`.startclass [topic]`|Start logging a class; Append optional `topic` to channel topic|PM|Admin|
