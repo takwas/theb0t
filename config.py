@@ -270,7 +270,8 @@ class DeployConfig(Config):
             'mbuf',
             'rtnpro',
             'chandankumar',
-            'praveenkumar',)  
+            'praveenkumar',
+            'acetakwas',)  
 
     
     ####################
